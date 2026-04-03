@@ -118,5 +118,22 @@ app.post('/api/budgets', async (req, res) => {
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'Index.html'));
 });
+app.get('/api/stats/categories', async (req, res) => {
+    const { month, year, type = 'expense' } = req.query;
+    const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select('amount, category, date, type');
+    
+    if (error) return res.json({ success: false, data: {} });
 
+    const summary = {};
+    transactions.forEach(t => {
+        const d = new Date(t.date);
+        // So khớp tháng/năm và loại giao dịch
+        if (t.type === type && (d.getMonth() + 1) == month && d.getFullYear() == year) {
+            summary[t.category] = (summary[t.category] || 0) + Number(t.amount);
+        }
+    });
+    res.json({ success: true, data: summary });
+});
 app.listen(PORT, () => console.log(`🚀 Server Finly chạy tại: http://localhost:${PORT}`));

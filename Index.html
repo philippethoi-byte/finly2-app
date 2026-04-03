@@ -304,307 +304,17 @@
 			</form>
 		</div>
 	</div>
-    <script>
-		let cashflowChart, pieChart, compareChart;
-        lucide.createIcons();
-		// Biến toàn cục để quản lý instance của Chart (tránh lỗi lồng biểu đồ)
+   <script>
+		let transactions = [];
+		// Đối tượng quản lý các instance của Chart để tránh lỗi lồng biểu đồ
 		let charts = {
 			cashflow: null,
 			pie: null,
 			compare: null
 		};
-        function switchView(viewId, el) {
-			document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
-			document.getElementById('view-' + viewId).classList.add('active');
-			
-			// Reset nav styles
-			document.querySelectorAll('.nav-item').forEach(item => {
-				item.classList.remove('bg-brand-50', 'dark:bg-brand-900/20', 'text-brand-600');
-			});
-			el.classList.add('bg-brand-50', 'dark:bg-brand-900/20', 'text-brand-600');
-			
-			if (typeof lucide !== 'undefined') lucide.createIcons();
-		}
-        function toggleTheme() {
-            const html = document.documentElement;
-            html.classList.toggle('dark');
-        }
-        function toggleModal(id) {
-            const modal = document.getElementById(id);
-            modal.classList.toggle('hidden');
-            if(!modal.classList.contains('hidden')) {
-                // Set default date to today when opening
-                document.getElementById('tx-date').valueAsDate = new Date();
-            }
-        }
 
-        const categories = {
-            expense: ['Ăn uống', 'Di chuyển', 'Nhà cửa', 'Bảo hiểm', 'Điện nước', 'Mua sắm', 'Khác'],
-            income: ['Lương', 'Thưởng', 'Đầu tư', 'Freelance', 'Kinh doanh', 'Khác']
-        };
+		const formatMoney = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
 
-        let currentTxType = 'expense'; // Trạng thái loại giao dịch đang chọn trong Modal
-
-        function switchTransTab(type) {
-            currentTxType = type;
-            const tabExpense = document.getElementById('tab-expense');
-            const tabIncome = document.getElementById('tab-income');
-            const selectCat = document.getElementById('select-category');
-
-            if(type === 'expense') {
-                tabExpense.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white dark:bg-dark-card shadow-sm text-danger";
-                tabIncome.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-success";
-                selectCat.innerHTML = categories.expense.map(c => `<option value="${c}">${c}</option>`).join('');
-            } else {
-                tabIncome.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white dark:bg-dark-card shadow-sm text-success";
-                tabExpense.className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-danger";
-                selectCat.innerHTML = categories.income.map(c => `<option value="${c}">${c}</option>`).join('');
-            }
-        }
-
-        // Initialize form
-        switchTransTab('expense');
-
-        // ==========================================
-        // BACKEND INTEGRATION: Gọi API
-        // ==========================================
-        const API_URL = '/api/transactions';
-
-        // Format tiền tệ VNĐ
-        const formatMoney = (amount) => {
-            return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
-        };
-
-        // Hàm gọi API lấy danh sách
-        async function fetchTransactions() {
-            try {
-                const response = await fetch(API_URL);
-                const result = await response.json();
-                if (result.success) {
-                    renderDashboard(result.data);
-                    renderTransactionTable(result.data);
-                }
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu:", error);
-            }
-        }
-
-        // Hàm render số liệu Dashboard
-        async function renderDashboard(transactions) {
-            let totalIncome = 0;
-            let totalExpense = 0;
-
-            transactions.forEach(t => {
-                if(t.type === 'income') totalIncome += t.amount;
-                else totalExpense += t.amount;
-            });
-
-            const balance = totalIncome - totalExpense;
-			try {
-				// Lấy thêm dữ liệu tiết kiệm để tính tổng tài sản
-				const savRes = await fetch('/api/saving');
-				const savResult = await savRes.json();
-				const totalSavings = savResult.data.reduce((sum, s) => sum + s.amount, 0);
-				
-				// Update KPI
-				document.getElementById('kpi-income').innerText = formatMoney(totalIncome);
-				document.getElementById('kpi-expense').innerText = formatMoney(totalExpense);
-				document.getElementById('kpi-balance').innerText = formatMoney(balance);
-				document.getElementById('kpi-total').innerText = formatMoney(totalSavings + balance); // Giả sử vốn gốc 125m
-			} catch (e) {
-				console.error("Lỗi tính toán tổng tài sản:", e);
-			}
-            // Render Recent List (tối đa 5 cái)
-            const recentContainer = document.getElementById('recent-transactions-list');
-            recentContainer.innerHTML = '';
-            
-            if(transactions.length === 0) {
-                recentContainer.innerHTML = '<p class="p-4 text-center text-gray-500">Chưa có giao dịch nào</p>';
-                return;
-            }
-
-            transactions.slice(0, 5).forEach(t => {
-                const isIncome = t.type === 'income';
-                const sign = isIncome ? '+' : '-';
-                const colorClass = isIncome ? 'text-success' : 'text-danger';
-                const icon = isIncome ? 'arrow-down-left' : 'shopping-bag';
-                
-                recentContainer.innerHTML += `
-                    <div class="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-border/30 transition-colors">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center ${colorClass}">
-                                <i data-lucide="${icon}" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">${t.category} ${t.note ? ' - ' + t.note : ''}</p>
-                                <p class="text-xs text-gray-500">${t.date} • ${t.source}</p>
-                            </div>
-                        </div>
-                        <span class="font-semibold ${colorClass}">${sign} ${formatMoney(t.amount)}</span>
-                    </div>
-                `;
-            });
-            lucide.createIcons();
-        }
-				// 2. Logic Quản lý Tiết kiệm mới
-		async function fetchSavings() {
-			try {
-				const res = await fetch('/api/saving');
-				const result = await res.json();
-				if (result.success) renderSavingsCards(result.data);
-			} catch (e) { console.error("Lỗi tải tiết kiệm:", e); }
-		}
-		
-		async function renderSavingsCards(savings) {
-				const container = document.getElementById('savings-list');
-				// Kiểm tra nếu savings không phải mảng thì gán thành mảng rỗng
-				const safeSavings = Array.isArray(savings) ? savings : [];
-				container.innerHTML = savings.length ? '' : '<p class="text-center text-gray-500 col-span-full">Chưa có khoản tiết kiệm nào.</p>';
-
-				savings.forEach(s => {
-					const progress = s.target > 0 ? Math.min((s.amount / s.target) * 100, 100) : 0;
-					container.innerHTML += `
-						<div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-							<div class="flex justify-between items-start mb-4">
-								<div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-success rounded-xl">
-									<i data-lucide="piggy-bank" class="w-6 h-6"></i>
-								</div>
-								<button onclick="deleteSaving('${s.id}')" class="text-gray-400 hover:text-danger"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-							</div>
-							<h4 class="font-bold text-lg">${s.name}</h4>
-							<div class="mt-4 space-y-2">
-								<div class="flex justify-between text-sm">
-									<span class="text-gray-500">Đã tích lũy</span>
-									<span class="font-bold text-success">${formatMoney(s.amount)}</span>
-								</div>
-								${s.target > 0 ? `
-									<div class="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
-										<div class="h-full bg-success" style="width: ${progress}%"></div>
-									</div>
-									<div class="flex justify-between text-[10px] text-gray-400 uppercase">
-										<span>Mục tiêu: ${formatMoney(s.target)}</span>
-										<span>${progress.toFixed(1)}%</span>
-									</div>
-								` : ''}
-							</div>
-						</div>
-					`;
-				});
-				lucide.createIcons();
-			}
-
-			async function submitSaving(e) {
-				e.preventDefault();
-				const payload = {
-					name: document.getElementById('sav-name').value,
-					amount: document.getElementById('sav-amount').value,
-					target: document.getElementById('sav-target').value
-				};
-				await fetch('/api/saving', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload)
-				});
-				toggleModal('savingModal');
-				document.getElementById('saving-form').reset();
-				fetchSavings();
-				fetchTransactions(); // Cập nhật lại KPI Dashboard
-			}
-
-			async function deleteSaving(id) {
-				if(!confirm("Xóa khoản tiết kiệm này?")) return;
-				await fetch(`/api/saving/${id}`, { method: 'DELETE' });
-				fetchSavings();
-				fetchTransactions();
-			}
-		
-        // Hàm render bảng giao dịch
-        function renderTransactionTable(transactions) {
-            const tbody = document.getElementById('transactions-table-body');
-            tbody.innerHTML = '';
-
-            if(transactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Chưa có dữ liệu</td></tr>';
-                return;
-            }
-
-            transactions.forEach(t => {
-                const isIncome = t.type === 'income';
-                const sign = isIncome ? '+' : '-';
-                const colorClass = isIncome ? 'text-success' : 'text-danger';
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 dark:hover:bg-dark-border/30">
-                        <td class="px-6 py-4 text-gray-500">${t.date}</td>
-                        <td class="px-6 py-4">
-                            <div class="font-medium text-gray-900 dark:text-white">${t.note || t.category}</div>
-                            <div class="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                                <div class="w-2 h-2 rounded-full ${isIncome ? 'bg-success' : 'bg-orange-400'}"></div> ${t.category}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 dark:bg-dark-border rounded-md text-xs">${t.source}</span></td>
-                        <td class="px-6 py-4 text-right font-medium ${colorClass}">${sign} ${formatMoney(t.amount)}</td>
-                        <td class="px-6 py-4 text-center">
-                            <button onclick="deleteTransaction('${t.id}')" class="text-danger hover:underline text-sm">Xóa</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // Hàm Submit thêm giao dịch (POST API)
-        async function submitTransaction(e) {
-            e.preventDefault(); // Ngăn load lại trang
-            
-            const btn = document.getElementById('btn-submit');
-            btn.innerText = "Đang lưu...";
-            
-            const payload = {
-                type: currentTxType,
-                amount: document.getElementById('tx-amount').value,
-                date: document.getElementById('tx-date').value,
-                source: document.getElementById('tx-source').value,
-                category: document.getElementById('select-category').value,
-                note: document.getElementById('tx-note').value
-            };
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await res.json();
-                
-                if(result.success) {
-                    toggleModal('transactionModal'); // Đóng modal
-                    document.getElementById('transaction-form').reset(); // Xóa form
-                    fetchTransactions(); // Load lại list
-                } else {
-                    alert("Có lỗi xảy ra: " + result.message);
-                }
-            } catch (error) {
-                console.error("Lỗi:", error);
-                alert("Lỗi kết nối server!");
-            } finally {
-                btn.innerText = "Lưu Giao Dịch";
-            }
-        }
-
-        // Hàm xóa giao dịch (DELETE API)
-        async function deleteTransaction(id) {
-            if(!confirm("Bạn có chắc chắn muốn xóa giao dịch này?")) return;
-
-            try {
-                const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                const result = await res.json();
-                if(result.success) {
-                    fetchTransactions(); // Cập nhật UI ngay lập tức
-                }
-            } catch (error) {
-                console.error("Lỗi xóa:", error);
-            }
-        }
 		// --- 1. HÀM CẬP NHẬT TẤT CẢ BIỂU ĐỒ ---
 		async function updateAllCharts() {
 			try {
@@ -612,11 +322,11 @@
 				const month = now.getMonth() + 1;
 				const year = now.getFullYear();
 
-				// Lấy dữ liệu dòng tiền (12 tháng)
+				// Lấy dữ liệu dòng tiền
 				const cfRes = await fetch('/api/stats/cashflow');
 				const cfResult = await cfRes.json();
 				
-				// Lấy dữ liệu phân bổ chi tiêu (Tháng hiện tại)
+				// Lấy dữ liệu phân bổ chi tiêu
 				const catRes = await fetch(`/api/stats/categories?month=${month}&year=${year}&type=expense`);
 				const catResult = await catRes.json();
 
@@ -626,11 +336,12 @@
 
 				if (cfResult.success) {
 					renderCashflowChart(cfResult.data);
-					renderCompareChart(cfResult.data, month, year); // Vẽ biểu đồ ở tab Báo cáo
+					renderCompareChart(cfResult.data, month, year);
 				}
 				
 				if (catResult.success) {
 					renderPieChart(catResult.data);
+					// Gửi Object ngân sách vào hàm xử lý
 					renderCategorySummaryWithBudgets(catResult.data, budResult.data || {});
 				}
 
@@ -638,91 +349,7 @@
 				console.error("Lỗi khi tải dữ liệu biểu đồ:", error);
 			}
 		}
-		// Bổ sung hàm vẽ biểu đồ so sánh Thu - Chi ở tab Báo cáo
-		function renderCompareChart(cfData, month, year) {
-			const ctx = document.getElementById('reportCompareChart');
-			if (!ctx) return;
 
-			const key = `${year}-${String(month).padStart(2, '0')}`;
-			const currentMonthData = cfData[key] || { income: 0, expense: 0 };
-
-			if (charts.compare) charts.compare.destroy();
-			charts.compare = new Chart(ctx, {
-				type: 'bar',
-				data: {
-					labels: ['Tháng ' + month],
-					datasets: [
-						{ label: 'Thu nhập', data: [currentMonthData.income], backgroundColor: '#10b981' },
-						{ label: 'Chi tiêu', data: [currentMonthData.expense], backgroundColor: '#ef4444' }
-					]
-				},
-				options: { responsive: true, maintainAspectRatio: false }
-			});
-		}
-		function renderCategorySummaryWithBudgets(spending, budgets) {
-			const container = document.getElementById('category-summary-list');
-			container.innerHTML = '';
-
-			// Lấy danh sách tất cả các hạng mục có chi tiêu HOẶC có đặt hạn mức
-			const allCategories = [...new Set([...Object.keys(catData), ...Object.keys(budgets)])];
-
-			if (allCategories.length === 0) {
-				container.innerHTML = '<p class="text-center text-gray-500 py-10">Chưa có dữ liệu chi tiêu tháng này.</p>';
-				return;
-			}
-
-			allCategories.forEach(cat => {
-				const spent = spending[cat] || 0;
-				const limit = budgets[cat] || 0;
-				
-				// Tính % đã sử dụng
-				let percent = 0;
-				let barColor = 'bg-brand-500';
-				let statusText = '';
-
-				if (limit > 0) {
-					percent = Math.min((spent / limit) * 100, 100);
-					if (percent >= 100) {
-						barColor = 'bg-danger';
-						statusText = '<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-2">Vượt mức!</span>';
-					} else if (percent > 80) {
-						barColor = 'bg-orange-500';
-						statusText = '<span class="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded ml-2">Sắp chạm mốc</span>';
-					}
-				}
-
-				container.innerHTML += `
-					<div class="space-y-2">
-						<div class="flex justify-between items-end">
-							<div>
-								<span class="font-medium text-gray-700 dark:text-gray-300">${cat}</span>
-								${statusText}
-							</div>
-							<div class="text-right">
-								<span class="font-bold text-sm">${new Intl.NumberFormat('vi-VN').format(spent)} ₫</span>
-								${limit > 0 ? `<span class="text-gray-400 text-xs"> / ${new Intl.NumberFormat('vi-VN').format(limit)} ₫</span>` : ''}
-							</div>
-						</div>
-						
-						<div class="w-full bg-gray-100 dark:bg-gray-800 h-2.5 rounded-full overflow-hidden flex">
-							<div class="h-full ${barColor} transition-all duration-500" style="width: ${limit > 0 ? percent : (spent > 0 ? 100 : 0)}%"></div>
-						</div>
-						
-						${limit > 0 ? `
-							<div class="flex justify-between text-[10px] text-gray-500 uppercase tracking-wider">
-								<span>Đã dùng ${percent.toFixed(1)}%</span>
-								<span>Còn lại: ${new Intl.NumberFormat('vi-VN').format(Math.max(limit - spent, 0))} ₫</span>
-							</div>
-						` : `
-							<div class="text-[10px] text-gray-400 italic">Chưa thiết lập hạn mức</div>
-						`}
-					</div>
-				`;
-			});
-			
-			// Khởi tạo lại icons nếu cần
-			if (window.lucide) lucide.createIcons();
-		}
 		function renderCashflowChart(data) {
 			const ctx = document.getElementById('cashflowChart');
 			if (!ctx) return;
@@ -741,13 +368,22 @@
 						{ label: 'Chi tiêu', data: expenses, backgroundColor: '#ef4444', borderRadius: 5 }
 					]
 				},
-				options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+				options: { 
+					responsive: true, 
+					maintainAspectRatio: false,
+					plugins: { legend: { position: 'bottom' } }
+				}
 			});
 		}
 
 		function renderPieChart(data) {
 			const ctx = document.getElementById('expensePieChart');
-			if (!ctx || Object.keys(data).length === 0) return;
+			if (!ctx) return;
+			
+			if (!data || Object.keys(data).length === 0) {
+				if (charts.pie) charts.pie.destroy();
+				return;
+			}
 
 			if (charts.pie) charts.pie.destroy();
 			charts.pie = new Chart(ctx, {
@@ -759,50 +395,154 @@
 						backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899']
 					}]
 				},
-				options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+				options: { 
+					responsive: true, 
+					maintainAspectRatio: false,
+					plugins: { legend: { position: 'bottom' } }
+				}
 			});
 		}
 
-		function renderCategorySummary(data) {
-			const container = document.getElementById('category-summary-list');
-			container.innerHTML = '';
-			for (const [cat, val] of Object.entries(data)) {
-				container.innerHTML += `
-					<div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-dark-bg rounded-lg">
-						<span class="font-medium">${cat}</span>
-						<span class="font-bold text-danger">${new Intl.NumberFormat('vi-VN').format(val)} ₫</span>
-					</div>
-				`;
-			}
+		function renderCompareChart(cfData, month, year) {
+			const ctx = document.getElementById('reportCompareChart');
+			if (!ctx) return;
+
+			const key = `${year}-${String(month).padStart(2, '0')}`;
+			const currentData = cfData[key] || { income: 0, expense: 0 };
+
+			if (charts.compare) charts.compare.destroy();
+			charts.compare = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: ['Tháng ' + month],
+					datasets: [
+						{ label: 'Thu nhập', data: [currentData.income], backgroundColor: '#10b981' },
+						{ label: 'Chi tiêu', data: [currentData.expense], backgroundColor: '#ef4444' }
+					]
+				},
+				options: { responsive: true, maintainAspectRatio: false }
+			});
 		}
 
-		// --- LOGIC NGÂN SÁCH ---
-		async function updateBudgetView(currentSpending) {
-			const res = await fetch('/api/budgets');
-			const budgets = (await res.json()).data;
-			const container = document.getElementById('budget-status-container');
+		function renderCategorySummaryWithBudgets(catData, budgets) {
+			const container = document.getElementById('budget-summary-list');
+			if (!container) return;
 			container.innerHTML = '';
 
-			for (const [cat, limit] of Object.entries(budgets)) {
-				const spent = currentSpending[cat] || 0;
-				const percent = Math.min((spent / limit) * 100, 100);
-				const color = percent > 90 ? 'bg-danger' : 'bg-brand-500';
+			// budgets lúc này là Object: {"Ăn uống": 500000}
+			const allCategories = new Set([...Object.keys(catData), ...Object.keys(budgets)]);
 
-				container.innerHTML += `
-					<div class="bg-white dark:bg-dark-card p-4 rounded-xl border border-dark-border">
-						<div class="flex justify-between mb-2">
-							<span class="font-bold">${cat}</span>
-							<span class="text-sm text-gray-500">${percent.toFixed(0)}%</span>
+			allCategories.forEach(cat => {
+				const spent = catData[cat] || 0;
+				const limit = budgets[cat] || 0;
+
+				if (limit > 0 || spent > 0) {
+					const percent = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
+					const color = (limit > 0 && spent > limit) ? 'bg-danger' : 'bg-brand-500';
+
+					container.innerHTML += `
+						<div class="bg-white dark:bg-dark-card p-4 rounded-xl border border-gray-100 dark:border-dark-border">
+							<div class="flex justify-between mb-2">
+								<span class="font-bold">${cat}</span>
+								<span class="text-sm text-gray-500">${limit > 0 ? percent.toFixed(0) + '%' : 'N/A'}</span>
+							</div>
+							<div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+								<div class="h-full ${color}" style="width: ${limit > 0 ? percent : 0}%"></div>
+							</div>
+							<div class="flex justify-between mt-2 text-xs">
+								<span>Đã dùng: ${formatMoney(spent)}</span>
+								<span>Hạn mức: ${limit > 0 ? formatMoney(limit) : '---'}</span>
+							</div>
 						</div>
-						<div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
-							<div class="h-full ${color}" style="width: ${percent}%"></div>
-						</div>
-						<div class="flex justify-between mt-2 text-xs">
-							<span>Đã dùng: ${new Intl.NumberFormat('vi-VN').format(spent)}</span>
-							<span>Hạn mức: ${new Intl.NumberFormat('vi-VN').format(limit)}</span>
-						</div>
+					`;
+				}
+			});
+		}
+
+		// --- CÁC HÀM XỬ LÝ GIAO DỊCH & MODAL ---
+		async function fetchTransactions() {
+			try {
+				const response = await fetch('/api/transactions');
+				const result = await response.json();
+				if (result.success) {
+					transactions = result.data;
+					renderDashboard(transactions);
+					renderTransactionTable(transactions);
+				}
+			} catch (e) { console.error("Lỗi tải giao dịch:", e); }
+		}
+
+		function renderDashboard(data) {
+			let income = 0, expense = 0;
+			data.forEach(t => t.type === 'income' ? income += Number(t.amount) : expense += Number(t.amount));
+			
+			document.getElementById('kpi-income').innerText = formatMoney(income);
+			document.getElementById('kpi-expense').innerText = formatMoney(expense);
+			document.getElementById('kpi-balance').innerText = formatMoney(income - expense);
+
+			const list = document.getElementById('recent-transactions-list');
+			list.innerHTML = data.slice(0, 5).map(t => `
+				<div class="p-4 flex items-center justify-between border-b dark:border-dark-border">
+					<div>
+						<p class="font-medium">${t.category}</p>
+						<p class="text-xs text-gray-500">${t.date}</p>
 					</div>
-				`;
+					<span class="font-bold ${t.type === 'income' ? 'text-success' : 'text-danger'}">
+						${t.type === 'income' ? '+' : '-'} ${formatMoney(t.amount)}
+					</span>
+				</div>
+			`).join('');
+		}
+
+		function renderTransactionTable(data) {
+			const tbody = document.getElementById('transaction-tbody');
+			if (!tbody) return;
+			tbody.innerHTML = data.map(t => `
+				<tr class="border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+					<td class="p-4 text-sm">${t.date}</td>
+					<td class="p-4 text-sm font-medium">${t.category}</td>
+					<td class="p-4 text-sm text-gray-500">${t.source || '-'}</td>
+					<td class="p-4 text-sm ${t.type === 'income' ? 'text-success font-bold' : 'text-danger font-bold'}">
+						${t.type === 'income' ? '+' : '-'} ${formatMoney(t.amount)}
+					</td>
+					<td class="p-4 text-sm text-gray-500 italic">${t.note || ''}</td>
+					<td class="p-4">
+						<button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-danger p-1">
+							<i data-lucide="trash-2" class="w-4 h-4"></i>
+						</button>
+					</td>
+				</tr>
+			`).join('');
+			if (typeof lucide !== 'undefined') lucide.createIcons();
+		}
+
+		async function deleteTransaction(id) {
+			if (!confirm("Xóa giao dịch này?")) return;
+			await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+			await fetchTransactions();
+			await updateAllCharts();
+		}
+
+		async function saveTransaction() {
+			const data = {
+				amount: document.getElementById('amount').value,
+				date: document.getElementById('date').value,
+				source: document.getElementById('source').value,
+				category: document.getElementById('category').value,
+				note: document.getElementById('note').value,
+				type: document.querySelector('input[name="type"]:checked').value
+			};
+
+			const res = await fetch('/api/transactions', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(data)
+			});
+
+			if ((await res.json()).success) {
+				toggleModal('transactionModal');
+				await fetchTransactions();
+				await updateAllCharts();
 			}
 		}
 
@@ -810,37 +550,90 @@
 			const category = document.getElementById('budget-cat').value;
 			const limit = document.getElementById('budget-limit').value;
 
-			if (!category || !limit) {
-				alert("Vui lòng nhập đầy đủ thông tin");
-				return;
-			}
+			if (!category || !limit) return alert("Vui lòng nhập đủ!");
 
-			try {
-				const res = await fetch('/api/budgets', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ category, limit: Number(limit) })
-				});
-				
-				const result = await res.json();
-				if (result.success) {
-					toggleModal('budgetModal');
-					await updateAllCharts(); // Load lại biểu đồ ngay lập tức
-				}
-			} catch (e) {
-				console.error("Lỗi lưu ngân sách:", e);
+			const res = await fetch('/api/budgets', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ category, limit: Number(limit) })
+			});
+			
+			if ((await res.json()).success) {
+				toggleModal('budgetModal');
+				await updateAllCharts();
 			}
 		}
 
-		function openBudgetModal() { toggleModal('budgetModal'); }
-        // Chạy lần đầu khi load web
-        window.onload = async () => {
-			fetchTransactions(); // Gọi hàm lấy danh sách
-			fetchSavings(); // Gọi thêm hàm này
-			updateAllCharts();   // Gọi hàm vẽ biểu đồ
-			// Khởi tạo lại các icon Lucide
+		async function fetchSavings() {
+			const res = await fetch('/api/saving');
+			const result = await res.json();
+			if (result.success) {
+				const list = document.getElementById('savings-list');
+				list.innerHTML = result.data.map(s => `
+					<div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+						<div class="flex justify-between items-start mb-4">
+							<div class="p-2 bg-brand-50 dark:bg-brand-900/20 rounded-lg text-brand-600">
+								<i data-lucide="piggy-bank" class="w-5 h-5"></i>
+							</div>
+							<button onclick="deleteSaving('${s.id}')" class="text-gray-400 hover:text-danger"><i data-lucide="x" class="w-4 h-4"></i></button>
+						</div>
+						<h4 class="font-bold mb-1">${s.name}</h4>
+						<p class="text-2xl font-bold text-success mb-3">${formatMoney(s.amount)}</p>
+						<div class="text-xs text-gray-500 flex justify-between mb-1">
+							<span>Tiến độ</span>
+							<span>Mục tiêu: ${formatMoney(s.target)}</span>
+						</div>
+						<div class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+							<div class="bg-success h-full" style="width: ${Math.min((s.amount/s.target)*100, 100)}%"></div>
+						</div>
+					</div>
+				`).join('');
+				if (typeof lucide !== 'undefined') lucide.createIcons();
+			}
+		}
+
+		async function saveSaving() {
+			const data = {
+				name: document.getElementById('saving-name').value,
+				amount: document.getElementById('saving-amount').value,
+				target: document.getElementById('saving-target').value
+			};
+			await fetch('/api/saving', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(data)
+			});
+			toggleModal('savingModal');
+			fetchSavings();
+		}
+
+		async function deleteSaving(id) {
+			if (confirm("Xóa mục tiết kiệm này?")) {
+				await fetch(`/api/saving/${id}`, { method: 'DELETE' });
+				fetchSavings();
+			}
+		}
+
+		function toggleModal(id) {
+			const m = document.getElementById(id);
+			m.classList.toggle('hidden');
+			m.classList.toggle('flex');
+		}
+
+		function switchView(viewId, el) {
+			document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+			document.getElementById('view-' + viewId).classList.add('active');
+			document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('bg-brand-50', 'dark:bg-brand-900/20', 'text-brand-600'));
+			el.classList.add('bg-brand-50', 'dark:bg-brand-900/20', 'text-brand-600');
 			if (typeof lucide !== 'undefined') lucide.createIcons();
-				};
-    </script>
+		}
+
+		window.onload = async () => {
+			await fetchTransactions();
+			await fetchSavings();
+			await updateAllCharts();
+			if (typeof lucide !== 'undefined') lucide.createIcons();
+		};
+	</script>
 </body>
 </html>
