@@ -1,0 +1,47 @@
+[
+    {
+        "id": "1775200824708",
+        "amount": 1000000,
+        "date": "2026-04-03",
+        "source": "Vietcombank",
+        "category": "Lương",
+        "note": "fdsf",
+        "type": "income"
+    },
+    {
+        "id": "1775200830852",
+        "amount": 2000000,
+        "date": "2026-04-03",
+        "source": "Tiền mặt",
+        "category": "Lương",
+        "note": "",
+        "type": "income"
+    },
+    {
+        "id": "1775201838398",
+        "amount": 200000,
+        "date": "2026-04-03",
+        "source": "Tiền mặt",
+        "category": "Di chuyển",
+        "note": "",
+        "type": "expense"
+    },
+    {
+        "id": "1775201848967",
+        "amount": 400000,
+        "date": "2026-04-03",
+        "source": "Tiền mặt",
+        "category": "Mua sắm",
+        "note": "",
+        "type": "expense"
+    },
+    {
+        "id": "1775205635877",
+        "amount": 500000,
+        "date": "2026-04-03",
+        "source": "Tiền mặt",
+        "category": "Ăn uống",
+        "note": "",
+        "type": "expense"
+    }
+]
