@@ -664,7 +664,7 @@
 			container.innerHTML = '';
 
 			// Lấy danh sách tất cả các hạng mục có chi tiêu HOẶC có đặt hạn mức
-			const allCategories = [...new Set([...Object.keys(spending), ...Object.keys(budgets)])];
+			const allCategories = [...new Set([...Object.keys(catData), ...Object.keys(budgets)])];
 
 			if (allCategories.length === 0) {
 				container.innerHTML = '<p class="text-center text-gray-500 py-10">Chưa có dữ liệu chi tiêu tháng này.</p>';
@@ -810,13 +810,26 @@
 			const category = document.getElementById('budget-cat').value;
 			const limit = document.getElementById('budget-limit').value;
 
-			await fetch('/api/budgets', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ category, limit })
-			});
-			toggleModal('budgetModal');
-			updateAllCharts();
+			if (!category || !limit) {
+				alert("Vui lòng nhập đầy đủ thông tin");
+				return;
+			}
+
+			try {
+				const res = await fetch('/api/budgets', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ category, limit: Number(limit) })
+				});
+				
+				const result = await res.json();
+				if (result.success) {
+					toggleModal('budgetModal');
+					await updateAllCharts(); // Load lại biểu đồ ngay lập tức
+				}
+			} catch (e) {
+				console.error("Lỗi lưu ngân sách:", e);
+			}
 		}
 
 		function openBudgetModal() { toggleModal('budgetModal'); }
