@@ -368,7 +368,7 @@
         // ==========================================
         // BACKEND INTEGRATION: Gọi API
         // ==========================================
-        const API_URL = 'http://localhost:3000/api/transactions';
+        const API_URL = '/api/transactions';
 
         // Format tiền tệ VNĐ
         const formatMoney = (amount) => {
@@ -402,7 +402,7 @@
             const balance = totalIncome - totalExpense;
 			try {
 				// Lấy thêm dữ liệu tiết kiệm để tính tổng tài sản
-				const savRes = await fetch('http://localhost:3000/api/saving');
+				const savRes = await fetch('/api/saving');
 				const savResult = await savRes.json();
 				const totalSavings = savResult.data.reduce((sum, s) => sum + s.amount, 0);
 				
@@ -449,7 +449,7 @@
 				// 2. Logic Quản lý Tiết kiệm mới
 		async function fetchSavings() {
 			try {
-				const res = await fetch('http://localhost:3000/api/saving');
+				const res = await fetch('/api/saving');
 				const result = await res.json();
 				if (result.success) renderSavingsCards(result.data);
 			} catch (e) { console.error("Lỗi tải tiết kiệm:", e); }
@@ -500,7 +500,7 @@
 					amount: document.getElementById('sav-amount').value,
 					target: document.getElementById('sav-target').value
 				};
-				await fetch('http://localhost:3000/api/saving', {
+				await fetch('/api/saving', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(payload)
@@ -513,7 +513,7 @@
 
 			async function deleteSaving(id) {
 				if(!confirm("Xóa khoản tiết kiệm này?")) return;
-				await fetch(`http://localhost:3000/api/saving/${id}`, { method: 'DELETE' });
+				await fetch(`/api/saving/${id}`, { method: 'DELETE' });
 				fetchSavings();
 				fetchTransactions();
 			}
@@ -613,15 +613,15 @@
 				const year = now.getFullYear();
 
 				// Lấy dữ liệu dòng tiền (12 tháng)
-				const cfRes = await fetch('http://localhost:3000/api/stats/cashflow');
+				const cfRes = await fetch('/api/stats/cashflow');
 				const cfResult = await cfRes.json();
 				
 				// Lấy dữ liệu phân bổ chi tiêu (Tháng hiện tại)
-				const catRes = await fetch(`http://localhost:3000/api/stats/categories?month=${month}&year=${year}&type=expense`);
+				const catRes = await fetch(`/api/stats/categories?month=${month}&year=${year}&type=expense`);
 				const catResult = await catRes.json();
 
 				// Lấy dữ liệu ngân sách
-				const budRes = await fetch('http://localhost:3000/api/budgets');
+				const budRes = await fetch('/api/budgets');
 				const budResult = await budRes.json();
 
 				if (cfResult.success) {
@@ -778,7 +778,7 @@
 
 		// --- LOGIC NGÂN SÁCH ---
 		async function updateBudgetView(currentSpending) {
-			const res = await fetch('http://localhost:3000/api/budgets');
+			const res = await fetch('/api/budgets');
 			const budgets = (await res.json()).data;
 			const container = document.getElementById('budget-status-container');
 			container.innerHTML = '';
@@ -810,7 +810,7 @@
 			const category = document.getElementById('budget-cat').value;
 			const limit = document.getElementById('budget-limit').value;
 
-			await fetch('http://localhost:3000/api/budgets', {
+			await fetch('/api/budgets', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ category, limit })
