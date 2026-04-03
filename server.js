@@ -8,7 +8,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // CẤU HÌNH SUPABASE
-// Thay thế bằng thông tin trong phần Project Settings > API của bạn
 const SUPABASE_URL = 'https://jvokwjafghldbirxdrxc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_1LiCttO5w0UJ-zW8Z9IF_Q_v36iNFRO';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -25,7 +24,6 @@ app.get('/api/transactions', async (req, res) => {
         .from('transactions')
         .select('*')
         .order('date', { ascending: false });
-    
     if (error) return res.status(500).json({ success: false, error: error.message });
     res.json({ success: true, data });
 });
@@ -36,7 +34,6 @@ app.post('/api/transactions', async (req, res) => {
         .from('transactions')
         .insert([{ amount: Number(amount), date, source, category, note, type }])
         .select();
-
     if (error) return res.status(500).json({ success: false, error: error.message });
     res.status(201).json({ success: true, data: data[0] });
 });
@@ -72,7 +69,7 @@ app.delete('/api/saving/:id', async (req, res) => {
 });
 
 // ==========================================
-// API THỐNG KÊ (Dòng tiền 6 tháng)
+// API THỐNG KÊ (Dòng tiền & Danh mục)
 // ==========================================
 app.get('/api/stats/cashflow', async (req, res) => {
     const { data: transactions, error } = await supabase.from('transactions').select('amount, date, type');
@@ -96,6 +93,25 @@ app.get('/api/stats/cashflow', async (req, res) => {
     res.json({ success: true, data: result });
 });
 
+// ĐÃ DI CHUYỂN API NÀY LÊN TRÊN app.get('*')
+app.get('/api/stats/categories', async (req, res) => {
+    const { month, year, type = 'expense' } = req.query;
+    const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select('amount, category, date, type');
+    
+    if (error) return res.json({ success: false, data: {} });
+
+    const summary = {};
+    transactions.forEach(t => {
+        const d = new Date(t.date);
+        if (t.type === type && (d.getMonth() + 1) == month && d.getFullYear() == year) {
+            summary[t.category] = (summary[t.category] || 0) + Number(t.amount);
+        }
+    });
+    res.json({ success: true, data: summary });
+});
+
 // ==========================================
 // API NGÂN SÁCH (BUDGETS)
 // ==========================================
@@ -108,32 +124,13 @@ app.get('/api/budgets', async (req, res) => {
 
 app.post('/api/budgets', async (req, res) => {
     const { category, limit } = req.body;
-    const { error } = await supabase
-        .from('budgets')
-        .upsert({ category, limit_amount: Number(limit) });
+    const { error } = await supabase.from('budgets').upsert({ category, limit_amount: Number(limit) });
     res.json({ success: !error });
 });
 
-// Phục vụ giao diện
+// PHỤC VỤ GIAO DIỆN PHẢI NẰM Ở CUỐI CÙNG
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'Index.html'));
 });
-app.get('/api/stats/categories', async (req, res) => {
-    const { month, year, type = 'expense' } = req.query;
-    const { data: transactions, error } = await supabase
-        .from('transactions')
-        .select('amount, category, date, type');
-    
-    if (error) return res.json({ success: false, data: {} });
 
-    const summary = {};
-    transactions.forEach(t => {
-        const d = new Date(t.date);
-        // So khớp tháng/năm và loại giao dịch
-        if (t.type === type && (d.getMonth() + 1) == month && d.getFullYear() == year) {
-            summary[t.category] = (summary[t.category] || 0) + Number(t.amount);
-        }
-    });
-    res.json({ success: true, data: summary });
-});
 app.listen(PORT, () => console.log(`🚀 Server Finly chạy tại: http://localhost:${PORT}`));
