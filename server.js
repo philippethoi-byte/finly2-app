@@ -4,7 +4,8 @@ const path = require('path');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+//const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'transactions.json');
 const SAVING_FILE = path.join(__dirname, 'saving.json');
 const BUDGET_FILE = path.join(__dirname, 'budgets.json');
@@ -66,6 +67,12 @@ const writeJSON = (filePath, data) => {
 // ==========================================
 // API CHO TIẾT KIỆM (SAVINGS) - MỚI
 // ==========================================
+
+app.use(express.static(path.join(__dirname, ''))); 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Index.html'));
+});
+
 app.get('/api/saving', (req, res) => {
     const savings = readJSON(SAVING_FILE);
     res.json({ success: true, data: savings });
