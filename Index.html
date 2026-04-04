@@ -194,18 +194,22 @@
                 <h2 class="text-2xl font-bold">Mục tiêu tiết kiệm</h2>
                 <button onclick="toggleModal('savingModal')" class="bg-success text-white px-4 py-2 rounded-xl font-bold text-sm">Tạo mục tiêu</button>
             </div>
-		    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+		    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Tổng thu nhập (năm)</p>
                     <h3 id="kpi-income-saving" class="text-2xl font-bold text-success">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng tiết kiệm</p>
-                    <h3 id="kpi-expense-saving" class="text-2xl font-bold text-danger">0 ₫</h3>
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu (năm)</p>
+                    <h3 id="kpi-expense" class="text-2xl font-bold text-danger">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại (năm)</p>
                     <h3 id="kpi-balance-saving" class="text-2xl font-bold">0 ₫</h3>
+                </div>
+				<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng tiết kiệm</p>
+                    <h3 id="kpi-expense-saving" class="text-2xl font-bold text-danger">0 ₫</h3>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="savings-list"></div>
