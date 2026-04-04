@@ -509,42 +509,47 @@
         }
 
         function renderCategorySummaryWithBudgets(catData, budgets) {
-            const container = document.getElementById('budget-summary-list');
-			const containerNew = document.getElementById('view-budget-summary-list');
-			
-            if (!container) return;
-            container.innerHTML = '';
-			
-			if (containerNew) containerNew.innerHTML = '';
-			
-            for (const cat in budgets) {
+			// Xác định 2 vị trí muốn hiển thị bảng ngân sách
+			const container1 = document.getElementById('budget-summary-list');
+			const container2 = document.getElementById('view-budget-summary-list');
+
+			// Xóa nội dung cũ trước khi vẽ mới để tránh bị lặp dữ liệu
+			if (container1) container1.innerHTML = '';
+			if (container2) container2.innerHTML = '';
+
+			// Kiểm tra nếu không có dữ liệu ngân sách thì dừng
+			if (!budgets || Object.keys(budgets).length === 0) return;
+
+			for (const cat in budgets) {
 				const limit = budgets[cat];
 				const spent = catData[cat] || 0;
 				const percent = Math.min((spent / limit) * 100, 100);
 				const color = percent > 90 ? 'bg-danger' : 'bg-brand-500';
 
-				// 2. Tạo chuỗi HTML (Template dùng chung cho cả 2)
-				const budgetItemHTML = `
-					<div class="bg-white dark:bg-dark-card p-4 rounded-xl border border-dark-border">
+				// Tạo chuỗi HTML cho mỗi mục ngân sách
+				const cardHTML = `
+					<div class="bg-white dark:bg-dark-card p-4 rounded-xl border border-dark-border shadow-sm">
 						<div class="flex justify-between mb-2">
-							<span class="font-bold">${cat}</span>
-							<span class="text-sm text-gray-500">${percent.toFixed(0)}%</span>
+							<span class="font-bold text-gray-700 dark:text-gray-200">${cat}</span>
+							<span class="text-sm font-medium ${percent > 100 ? 'text-danger' : 'text-gray-500'}">
+								${percent.toFixed(0)}%
+							</span>
 						</div>
 						<div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
-							<div class="h-full ${color}" style="width: ${percent}%\"></div>
+							<div class="h-full ${color} transition-all duration-500" style="width: ${percent}%"></div>
 						</div>
-						<div class="flex justify-between mt-2 text-xs">
-							<span>Đã dùng: ${formatMoney(spent)}</span>
-							<span>Hạn mức: ${formatMoney(limit)}</span>
+						<div class="flex justify-between mt-2 text-xs text-gray-500">
+							<span>Đã dùng: ${new Intl.NumberFormat('vi-VN').format(spent)} ₫</span>
+							<span>Hạn mức: ${new Intl.NumberFormat('vi-VN').format(limit)} ₫</span>
 						</div>
 					</div>
 				`;
 
-				// 3. Đẩy vào cả hai nơi nếu chúng tồn tại trên giao diện
-				if (containerOld) containerOld.insertAdjacentHTML('beforeend', budgetItemHTML);
-				if (containerNew) containerNew.insertAdjacentHTML('beforeend', budgetItemHTML);
+				// Đẩy HTML vào cả 2 bảng (nếu chúng tồn tại)
+				if (container1) container1.innerHTML += cardHTML;
+				if (container2) container2.innerHTML += cardHTML;
 			}
-        }
+		}
 
         // --- CÁC HÀM XỬ LÝ DỮ LIỆU ---
         async function fetchTransactions() {
