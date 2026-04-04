@@ -196,7 +196,7 @@
                     <h3 id="kpi-income-saving" class="text-2xl font-bold text-success">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu</p>
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng tiết kiệm</p>
                     <h3 id="kpi-expense-saving" class="text-2xl font-bold text-danger">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
@@ -493,7 +493,6 @@
             document.getElementById('kpi-balance').innerText = formatMoney(inc - exp);
 			
             document.getElementById('kpi-income-saving').innerText = formatMoney(inc);
-            document.getElementById('kpi-expense-saving').innerText = formatMoney(exp);
             document.getElementById('kpi-balance-saving').innerText = formatMoney(inc - exp);
 			
             document.getElementById('recent-transactions-list').innerHTML = data.slice(0, 5).map(t => `
@@ -553,9 +552,22 @@
         }
 
         async function fetchSavings() {
-            const res = await fetch('/api/saving');
-            const result = await res.json();
-            if (result.success) {
+				const res = await fetch('/api/saving');
+				const result = await res.json();
+				if (result.success) {
+					const savingsData = result.data;
+				
+				// 1. TÍNH TỔNG TẤT CẢ KHOẢN TIẾT KIỆM
+				let totalSaved = 0;
+				savingsData.forEach(s => {
+					totalSaved += Number(s.amount || 0);
+				});
+
+				// 2. HIỂN THỊ LÊN KPI TRÊN TAB TIẾT KIỆM
+				const kpiSavingEl = document.getElementById('kpi-expense-saving');
+				if (kpiSavingEl) {
+					kpiSavingEl.innerText = formatMoney(totalSaved);
+				}
                 document.getElementById('savings-list').innerHTML = result.data.map(s => `
                 <div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-dark-border shadow-sm">
                     <div class="flex justify-between mb-4">
