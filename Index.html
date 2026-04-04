@@ -38,7 +38,7 @@
             <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
                 <i data-lucide="wallet" class="w-6 h-6"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">Finly V2</h1>
+            <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">Finly V3</h1>
         </div>
         <nav class="space-y-2 flex-1">
             <button onclick="switchView('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all active bg-brand-50 dark:bg-brand-900/20 text-brand-600">
@@ -192,7 +192,7 @@
         <div id="view-savings" class="view-section space-y-6">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-bold">Mục tiêu tiết kiệm</h2>
-                <button onclick="toggleModal('savingModal')" class="bg-success text-white px-4 py-2 rounded-xl font-bold text-sm">Tạo mục tiêu</button>
+                <button onclick="toggleModal('savingModal')" class="bg-success text-white px-4 py-2 rounded-xl font-bold text-sm">Tạo gói tiết kiệm</button>
             </div>
 		    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
@@ -323,17 +323,36 @@
 
     <div id="savingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
 	
-        <div class="bg-white dark:bg-dark-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl">
-            <h3 class="text-xl font-bold mb-6">Mục tiêu mới</h3>
-            <div class="space-y-4">
-                <input type="text" id="saving-name" placeholder="Tên mục tiêu (Mua iPhone, Đi du lịch...)" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
-                <input type="number" id="saving-target" placeholder="Số tiền cần đạt (₫)" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold">
-                <input type="number" id="saving-amount" placeholder="Số tiền đã có (₫)" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
-                <div class="flex gap-3 pt-4">
-                    <button onclick="toggleModal('savingModal')" class="flex-1 py-4 font-bold text-gray-500">Hủy</button>
-                    <button onclick="saveSaving()" class="flex-1 py-4 bg-success text-white rounded-2xl font-bold">Tạo ngay</button>
+        <div class="bg-white dark:bg-dark-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-6">Khởi tạo gói tiết kiệm</h3>
+            <form id="saving-form" class="space-y-4" onsubmit="event.preventDefault(); saveSaving();">
+                <div>
+                    <label for="saving-name" class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Tên gói tiết kiệm</label>
+                    <input type="text" id="saving-name" name="name" required placeholder="VD: Sổ tiết kiệm BIDV" autocomplete="off" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
                 </div>
-            </div>
+                <div>
+                    <label for="saving-initial" class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Tiền gửi ban đầu (gốc)</label>
+                    <input type="text" id="saving-initial" name="initial_amount" inputmode="decimal" required placeholder="VD: 50.000.000 (₫)" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="saving-term" class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Kỳ hạn (tháng)</label>
+                        <input type="number" id="saving-term" name="term_months" min="1" step="1" required placeholder="12" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
+                    </div>
+                    <div>
+                        <label for="saving-rate" class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Lãi suất (%/năm)</label>
+                        <input type="number" id="saving-rate" name="interest_rate" min="0" step="0.01" required placeholder="5.5" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
+                    </div>
+                </div>
+                <div>
+                    <label for="saving-date" class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Ngày gửi</label>
+                    <input type="date" id="saving-date" name="start_date" required class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="toggleModal('savingModal')" class="flex-1 py-4 font-bold text-gray-500">Hủy</button>
+                    <button type="submit" class="flex-1 py-4 bg-success text-white rounded-2xl font-bold">Tạo ngay</button>
+                </div>
+            </form>
         </div>
 
     </div>
@@ -688,52 +707,79 @@
         }
 
         async function fetchSavings() {
-				const res = await fetch('/api/saving');
-				const result = await res.json();
-				if (result.success) {
-					const savingsData = result.data;
-				
-				// 1. TÍNH TỔNG TẤT CẢ KHOẢN TIẾT KIỆM
-				let totalSaved = 0;
-				savingsData.forEach(s => {
-					totalSaved += Number(s.amount || 0);
-				});
+            try {
+                const res = await fetch('/api/saving');
+                const result = await res.json();
+                if (result.success) {
+                    const container = document.getElementById('savings-list');
+                    container.innerHTML = result.data.map(s => `
+                        <div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-dark-border shadow-sm">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-bold text-lg">${s.name}</h4>
+                                    <p class="text-xs text-gray-500">Ngày gửi: ${s.start_date}</p>
+                                </div>
+                                <button onclick="deleteSaving('${s.id}')" class="text-gray-400 hover:text-danger"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <p class="text-[10px] uppercase text-gray-400">Gốc ban đầu</p>
+                                    <p class="font-semibold text-brand-600">${formatMoney(s.initial_amount)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] uppercase text-gray-400">Lãi suất</p>
+                                    <p class="font-semibold text-success">${s.interest_rate}%/năm</p>
+                                </div>
+                            </div>
 
-				// 2. HIỂN THỊ LÊN KPI TRÊN TAB TIẾT KIỆM
-				const kpiSavingEl = document.getElementById('kpi-saving');
-				if (kpiSavingEl) {
-					kpiSavingEl.innerText = formatMoney(totalSaved);
-				}
-                document.getElementById('savings-list').innerHTML = result.data.map(s => `
-                <div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-dark-border shadow-sm">
-                    <div class="flex justify-between mb-4">
-                        <div class="p-2 bg-brand-50 dark:bg-brand-900/20 rounded-lg text-brand-600"><i data-lucide="piggy-bank"></i></div>
-                        <button onclick="deleteSaving('${s.id}')" class="text-gray-400 hover:text-danger"><i data-lucide="x" class="w-4 h-4"></i></button>
-                    </div>
-                    <h4 class="font-bold">${s.name}</h4>
-                    <p class="text-2xl font-bold text-success mb-3">${formatMoney(s.amount)}</p>
-                    <div class="text-xs text-gray-500 flex justify-between mb-1"><span>Tiến độ</span><span>Mục tiêu: ${formatMoney(s.target)}</span></div>
-                    <div class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-success h-full" style="width: ${(s.amount/s.target)*100}%"></div>
-                    </div>
-                </div>`).join('');
-                lucide.createIcons();
-            }
+                            <div class="p-3 bg-gray-50 dark:bg-dark-bg rounded-xl mb-3">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-500">Tiền lãi dự kiến:</span>
+                                    <span class="font-bold text-success">+${formatMoney(s.expected_interest)}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Ngày đáo hạn:</span>
+                                    <span class="font-bold text-orange-500">${s.maturity_date}</span>
+                                </div>
+                            </div>
+
+                            <div class="pt-3 border-t dark:border-dark-border flex justify-between items-center">
+                                <span class="text-xs text-gray-400 font-medium">TỔNG NHẬN (DỰ KIẾN):</span>
+                                <span class="text-lg font-black text-brand-500">${formatMoney(s.total_at_maturity)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    lucide.createIcons();
+                    
+                    // Cập nhật con số tổng tiết kiệm ở Header (như bạn đã yêu cầu trước đó)
+                    const totalSaved = result.data.reduce((sum, s) => sum + Number(s.initial_amount), 0);
+                    const el = document.getElementById('kpi-saving');
+                    if(el) el.innerText = formatMoney(totalSaved);
+                }
+            } catch (e) { console.error(e); }
         }
 
         async function saveSaving() {
             const payload = {
                 name: document.getElementById('saving-name').value,
-                target: document.getElementById('saving-target').value,
-                amount: document.getElementById('saving-amount').value
+                initial_amount: document.getElementById('saving-initial').value.replace(/\./g, ''),
+                term_months: document.getElementById('saving-term').value,
+                interest_rate: document.getElementById('saving-rate').value,
+                start_date: document.getElementById('saving-date').value
             };
-            await fetch('/api/saving', {
+
+            const res = await fetch('/api/saving', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            toggleModal('savingModal');
-            fetchSavings();
+            
+            if (res.ok) {
+                document.getElementById('saving-form').reset();
+                toggleModal('savingModal');
+                fetchSavings(); // Load lại danh sách
+            }
         }
 
         async function deleteSaving(id) {

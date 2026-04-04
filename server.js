@@ -15,7 +15,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '')));
-
+// =============thêm debug local - xóa khi upload lên server=============
+//app.get('/', (req, res) => {
+//    res.sendFile(path.join(__dirname, 'Index.html'));
+//});
 // ==========================================
 // API GIAO DỊCH (TRANSACTIONS)
 // ==========================================
@@ -48,24 +51,50 @@ app.delete('/api/transactions/:id', async (req, res) => {
 // API TIẾT KIỆM (SAVINGS)
 // ==========================================
 app.get('/api/saving', async (req, res) => {
-    const { data, error } = await supabase.from('savings').select('*');
-    if (error) return res.status(500).json({ success: false });
+    const { data, error } = await supabase
+        .from('savings')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ success: false, error: error.message });
     res.json({ success: true, data });
 });
 
 app.post('/api/saving', async (req, res) => {
-    const { name, amount, target } = req.body;
+    const { name, initial_amount, term_months, interest_rate, start_date } = req.body;
+    
+    const principal = Number(initial_amount);
+    const months = Number(term_months);
+    const rate = Number(interest_rate) / 100; // Đổi % sang số thập phân
+
+    // Công thức tính lãi đơn (Phổ biến cho tiền gửi có kỳ hạn)
+    // Lãi = Gốc * Lãi suất năm * (Số tháng / 12)
+    const expected_interest = Math.round(principal * rate * (months / 12));
+    const total_at_maturity = principal + expected_interest;
+
+    // Tính ngày đáo hạn
+    const start = new Date(start_date);
+    const maturity = new Date(start.setMonth(start.getMonth() + months));
+
     const { data, error } = await supabase
         .from('savings')
-        .insert([{ name, amount: Number(amount), target: Number(target) }])
-        .select();
-    if (error) return res.status(500).json({ success: false });
-    res.json({ success: true, data: data[0] });
+        .insert([{
+            name,
+            initial_amount: principal,
+            term_months: months,
+            interest_rate: Number(interest_rate),
+            start_date,
+            maturity_date: maturity.toISOString().split('T')[0],
+            expected_interest,
+            total_at_maturity
+        }]);
+
+    if (error) return res.status(500).json({ success: false, error: error.message });
+    res.json({ success: true, data });
 });
 
 app.delete('/api/saving/:id', async (req, res) => {
-    await supabase.from('savings').delete().eq('id', req.params.id);
-    res.json({ success: true });
+    const { error } = await supabase.from('savings').delete().eq('id', req.params.id);
+    res.json({ success: !error });
 });
 
 // ==========================================
