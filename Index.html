@@ -91,18 +91,22 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng thu nhập</p>
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng thu nhập (năm)</p>
                     <h3 id="kpi-income" class="text-2xl font-bold text-success">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu</p>
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu (năm)</p>
                     <h3 id="kpi-expense" class="text-2xl font-bold text-danger">0 ₫</h3>
                 </div>
+				<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu (tháng)</p>
+                    <h3 id="kpi-expense-mon" class="text-2xl font-bold text-danger">0 ₫</h3>
+                </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại</p>
-                    <h3 id="kpi-balance" class="text-2xl font-bold">0 ₫</h3>
+                    <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại (tháng)</p>
+                    <h3 id="kpi-balance-mon" class="text-2xl font-bold">0 ₫</h3>
                 </div>
             </div>
 
@@ -192,7 +196,7 @@
             </div>
 		    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng thu nhập</p>
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng thu nhập (năm)</p>
                     <h3 id="kpi-income-saving" class="text-2xl font-bold text-success">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
@@ -200,7 +204,7 @@
                     <h3 id="kpi-expense-saving" class="text-2xl font-bold text-danger">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại</p>
+                    <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại (năm)</p>
                     <h3 id="kpi-balance-saving" class="text-2xl font-bold">0 ₫</h3>
                 </div>
             </div>
@@ -372,30 +376,89 @@
         }
 
         function renderCashflowChart(data) {
-            const ctx = document.getElementById('cashflowChart');
-            if (!ctx) return;
-            const labels = Object.keys(data).map(l => l.split('-').reverse().join('/'));
-            const incomes = Object.values(data).map(v => v.income || 0);
-            const expenses = Object.values(data).map(v => v.expense || 0);
+			const ctx = document.getElementById('cashflowChart');
+			if (!ctx) return;
 
-            if (charts.cashflow) charts.cashflow.destroy();
-            charts.cashflow = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Thu nhập', data: incomes, backgroundColor: '#10b981', borderRadius: 4 },
-                        { label: 'Chi tiêu', data: expenses, backgroundColor: '#ef4444', borderRadius: 4 }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-        }
+			// Sắp xếp lại key theo thứ tự thời gian (từ tháng 1 đến tháng 12)
+			const sortedKeys = Object.keys(data).sort(); 
+
+			// Tạo label đẹp hơn: "Th 01", "Th 02"... thay vì "01/2024"
+			const labels = sortedKeys.map(key => {
+				const month = key.split('-')[1];
+				return `Tháng ${month}`;
+			});
+
+			const incomes = sortedKeys.map(key => data[key].income || 0);
+			const expenses = sortedKeys.map(key => data[key].expense || 0);
+
+			if (charts.cashflow) charts.cashflow.destroy();
+
+			charts.cashflow = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: labels,
+					datasets: [
+						{ 
+							label: 'Thu nhập', 
+							data: incomes, 
+							backgroundColor: '#10b981', 
+							borderRadius: 6,
+							borderSkipped: false,
+							barPercentage: 0.8, // Độ rộng cột
+							categoryPercentage: 0.8
+						},
+						{ 
+							label: 'Chi tiêu', 
+							data: expenses, 
+							backgroundColor: '#ef4444', 
+							borderRadius: 6,
+							borderSkipped: false,
+							barPercentage: 0.8,
+							categoryPercentage: 0.8
+						}
+					]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						legend: { 
+							position: 'top', // Đưa chú thích lên trên cho thoáng
+							align: 'end',
+							labels: { usePointStyle: true, boxWidth: 8, font: { size: 12 } } 
+						},
+						tooltip: {
+							mode: 'index',
+							intersect: false,
+							callbacks: {
+								label: function(context) {
+									let label = context.dataset.label || '';
+									if (label) label += ': ';
+									if (context.parsed.y !== null) {
+										label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+									}
+									return label;
+								}
+							}
+						}
+					},
+					scales: {
+						x: {
+							grid: { display: false } // Ẩn lưới dọc cho sạch
+						},
+						y: {
+							beginAtZero: true,
+							ticks: {
+								callback: function(value) {
+									if (value >= 1000000) return (value / 1000000) + ' Tr';
+									return value.toLocaleString('vi-VN');
+								}
+							}
+						}
+					}
+				}
+			});
+		}
 
         function renderPieChart(data) {
             const ctx = document.getElementById('expensePieChart');
@@ -486,14 +549,68 @@
         }
 
         function renderDashboard(data) {
-            let inc = 0, exp = 0;
-            data.forEach(t => t.type === 'income' ? inc += Number(t.amount) : exp += Number(t.amount));
-            document.getElementById('kpi-income').innerText = formatMoney(inc);
-            document.getElementById('kpi-expense').innerText = formatMoney(exp);
-            document.getElementById('kpi-balance').innerText = formatMoney(inc - exp);
+			const now = new Date();
+			const currentMonth = now.getMonth(); // 0 - 11
+			const currentYear = now.getFullYear();
+
+			// Biến tích lũy cho Năm
+			let yearIncome = 0;
+			let yearExpense = 0;
+
+			// Biến tích lũy cho Tháng
+			let monthIncome = 0;
+			let monthExpense = 0;
+
+			data.forEach(t => {
+				const tDate = new Date(t.date);
+				const tAmount = Number(t.amount) || 0;
+				const tYear = tDate.getFullYear();
+				const tMonth = tDate.getMonth();
+
+				// 1. Tính toán cho NĂM hiện tại
+				if (tYear === currentYear) {
+					if (t.type === 'income') {
+						yearIncome += tAmount;
+					} else {
+						yearExpense += tAmount;
+					}
+
+					// 2. Tính toán cho THÁNG hiện tại (nằm trong năm hiện tại)
+					if (tMonth === currentMonth) {
+						if (t.type === 'income') {
+							monthIncome += tAmount;
+						} else {
+							monthExpense += tAmount;
+						}
+					}
+				}
+			});
+
+			// --- CẬP NHẬT GIAO DIỆN ---
+
+			// KPI THEO NĂM
+			if (document.getElementById('kpi-income')) 
+				document.getElementById('kpi-income').innerText = formatMoney(yearIncome);
 			
-            document.getElementById('kpi-income-saving').innerText = formatMoney(inc);
-            document.getElementById('kpi-balance-saving').innerText = formatMoney(inc - exp);
+			if (document.getElementById('kpi-expense')) 
+				document.getElementById('kpi-expense').innerText = formatMoney(yearExpense);
+			
+			if (document.getElementById('kpi-balance')) 
+				document.getElementById('kpi-balance').innerText = formatMoney(yearIncome - yearExpense);
+
+			// KPI THEO THÁNG (Các ID mới bạn yêu cầu)
+			if (document.getElementById('kpi-expense-mon')) 
+				document.getElementById('kpi-expense-mon').innerText = formatMoney(monthExpense);
+			
+			if (document.getElementById('kpi-balance-mon')) 
+				document.getElementById('kpi-balance-mon').innerText = formatMoney(monthIncome - monthExpense);
+
+			// Cập nhật các bản sao ở tab Tiết kiệm (nếu bạn đã đổi ID như hướng dẫn trước)
+			if (document.getElementById('kpi-income-saving'))
+				document.getElementById('kpi-income-saving').innerText = formatMoney(yearIncome);
+			
+			if (document.getElementById('kpi-balance-saving'))
+				document.getElementById('kpi-balance-saving').innerText = formatMoney(yearIncome - yearExpense);
 			
             document.getElementById('recent-transactions-list').innerHTML = data.slice(0, 5).map(t => `
                 <div class="p-4 flex items-center justify-between border-b dark:border-dark-border">

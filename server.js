@@ -74,18 +74,22 @@ app.delete('/api/saving/:id', async (req, res) => {
 app.get('/api/stats/cashflow', async (req, res) => {
     const { data: transactions, error } = await supabase.from('transactions').select('amount, date, type');
     if (error) return res.status(500).json({ success: false });
-
+	
+	const currentYear = new Date().getFullYear();
     const result = {};
-    for (let i = 5; i >= 0; i--) {
-        const d = new Date();
-        d.setMonth(d.getMonth() - i);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        result[key] = { income: 0, expense: 0 };
+    // Khởi tạo mặc định 12 tháng cho năm hiện tại
+    for (let m = 1; m <= 12; m++) {
+        const monthKey = `${currentYear}-${String(m).padStart(2, '0')}`;
+        result[monthKey] = { income: 0, expense: 0 };
     }
 
     transactions.forEach(t => {
-        const monthKey = t.date.substring(0, 7);
-        if (result[monthKey]) {
+        const tDate = new Date(t.date);
+        const tYear = tDate.getFullYear();
+        const monthKey = t.date.substring(0, 7); // Định dạng YYYY-MM
+
+        // Chỉ cộng vào nếu giao dịch thuộc năm hiện tại
+        if (tYear === currentYear && result[monthKey]) {
             if (t.type === 'income') result[monthKey].income += Number(t.amount);
             else result[monthKey].expense += Number(t.amount);
         }
