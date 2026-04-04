@@ -53,7 +53,10 @@
             <button onclick="switchView('savings', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
                 <i data-lucide="piggy-bank" class="w-5 h-5"></i> <span class="font-medium">Tiết kiệm</span>
             </button>
-
+            <button onclick="switchView('debts', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                <i data-lucide="hand-coins" class="w-5 h-5"></i>
+                <span class="font-medium">Quản lý Nợ</span>
+            </button>
         </nav>
     </aside>
 
@@ -76,6 +79,10 @@
         </button>
         <button onclick="switchView('savings', this)" class="nav-item flex flex-col items-center p-2 text-gray-400 hover:text-brand-600 transition-colors">
             <i data-lucide="piggy-bank" class="w-5 h-5 mb-1"></i><span class="font-medium">Tiết kiệm</span>
+        </button>
+        <button onclick="switchView('debts', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400">
+            <i data-lucide="hand-coins" class="w-6 h-6"></i>
+            <span class="text-[10px]">Nợ</span>
         </button>
     </nav>
 
@@ -227,6 +234,49 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="savings-list"></div>
         </div>
+
+        <section id="view-debts" class="view-section space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Quản lý Nợ</h2>
+                    <p class="text-gray-500 dark:text-gray-400">Theo dõi nợ gốc, tiền lãi và lộ trình trả nợ</p>
+                </div>
+                <button onclick="openAddDebtModal()" class="flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    Thêm khoản nợ
+                </button>
+            </div>
+        
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <p class="text-sm text-gray-500 mb-1">Tôi đang nợ (Phải trả)</p>
+                    <h3 id="total-owe-to" class="text-2xl font-bold text-danger text-red-500">0 VNĐ</h3>
+                </div>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <p class="text-sm text-gray-500 mb-1">Người ta nợ tôi (Thu hồi)</p>
+                    <h3 id="total-owe-me" class="text-2xl font-bold text-success text-emerald-500">0 VNĐ</h3>
+                </div>
+            </div>
+        
+            <div class="bg-white dark:bg-dark-card rounded-2xl border border-gray-100 dark:border-dark-border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 dark:bg-gray-800/50">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Khoản nợ / Đối tác</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Gốc còn lại</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Lãi suất</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Tổng lãi đã trả</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Trạng thái</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="debt-list" class="divide-y divide-gray-100 dark:divide-dark-border">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
         <div id="view-reports" class="view-section space-y-6">
             <h2 class="text-2xl font-bold">Báo cáo chi tiết</h2>
@@ -383,6 +433,37 @@
             </form>
         </div>
 
+    </div>
+
+    <div id="debtModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-dark-card w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-dark-border transition-all scale-95">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                <h3 id="debt-modal-title" class="text-2xl font-bold text-gray-900 dark:text-white">Thêm khoản nợ mới</h3>
+                <button onclick="toggleModal('debtModal')" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Loại nợ</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="relative flex items-center justify-center p-3 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <input type="radio" name="debt_type" value="owe_to" checked class="mr-2"> Tôi nợ
+                        </label>
+                        <label class="relative flex items-center justify-center p-3 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <input type="radio" name="debt_type" value="owe_me" class="mr-2"> Cho mượn
+                        </label>
+                    </div>
+                </div>
+                <input type="text" id="debt_name" placeholder="Tên khoản nợ (Vd: Vay mua xe)" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                <input type="text" id="creditor_debtor" placeholder="Đối tác (Vd: Ngân hàng VCB)" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="debt_amount" placeholder="Số tiền gốc" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                    <input type="number" id="interest_rate" placeholder="Lãi suất (%/năm)" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                </div>
+                <input type="date" id="due_date" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                <textarea id="debt_note" placeholder="Ghi chú" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700"></textarea>
+                <button onclick="saveDebt()" class="w-full bg-brand-600 text-white py-4 rounded-xl font-bold">Lưu khoản nợ</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1194,7 +1275,10 @@
                     el.classList.add('bg-brand-50', 'dark:bg-brand-900/20', 'text-brand-600');
                 }
             }
-            
+            // 3. TỰ ĐỘNG LOAD DỮ LIỆU KHI VÀO VIEW NỢ
+            if (viewId === 'debts') {
+                fetchDebts();
+            }
             lucide.createIcons();
             // Refresh chart size khi đổi tab
             Object.values(charts).forEach(c => c && c.resize());
@@ -1383,10 +1467,117 @@
             });
         }
 
+        let debts = [];
+        let editingDebtId = null;
+
+        // Gọi hàm này khi click menu "Quản lý nợ"
+        async function fetchDebts() {
+            try {
+                const response = await fetch('/api/debts');
+                
+                // Kiểm tra nếu không phải JSON (tránh lỗi Unexpected token <)
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    console.error("Server không trả về JSON cho API /api/debts");
+                    return;
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    debts = result.data;
+                    renderDebts();
+                }
+            } catch (error) {
+                console.error("Lỗi khi kết nối API nợ:", error);
+            }
+        }
+
+        function renderDebts() {
+            const list = document.getElementById('debt-list');
+            if (!list) return;
+
+            let totalOweTo = 0;
+            let totalOweMe = 0;
+
+            list.innerHTML = debts.map(d => {
+                const amount = Number(d.remaining_amount) || 0;
+                const interestPaid = Number(d.total_interest_paid) || 0;
+                
+                if (d.type === 'owe_to') totalOweTo += amount;
+                else totalOweMe += amount;
+
+                return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-semibold text-gray-900 dark:text-white">${d.debt_name}</div>
+                            <div class="text-xs text-gray-500">${d.creditor_debtor}</div>
+                        </td>
+                        <td class="px-6 py-4 font-bold ${d.type === 'owe_to' ? 'text-red-500' : 'text-emerald-500'}">
+                            ${amount.toLocaleString('vi-VN')} đ
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">${d.interest_rate}% / ${d.interest_period === 'month' ? 'tháng' : 'năm'}</td>
+                        <td class="px-6 py-4 text-sm text-orange-500 font-medium">${interestPaid.toLocaleString('vi-VN')} đ</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${d.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}">
+                                ${d.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="deleteDebt('${d.id}')" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('total-owe-to').innerText = totalOweTo.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('total-owe-me').innerText = totalOweMe.toLocaleString('vi-VN') + ' VNĐ';
+            lucide.createIcons();
+        }
+
+        function openAddDebtModal() {
+            editingDebtId = null;
+            document.getElementById('debt-modal-title').innerText = "Thêm khoản nợ mới";
+            // Reset form...
+            toggleModal('debtModal');
+        }
+
+        async function saveDebt() {
+            const amount = parseInt(document.getElementById('debt_amount').value.replace(/\D/g, '')) || 0;
+            const payload = {
+                debt_name: document.getElementById('debt_name').value,
+                creditor_debtor: document.getElementById('creditor_debtor').value,
+                type: document.querySelector('input[name="debt_type"]:checked').value,
+                amount: amount,
+                interest_rate: document.getElementById('interest_rate').value,
+                due_date: document.getElementById('due_date').value,
+                note: document.getElementById('debt_note').value
+            };
+
+            const res = await fetch('/api/debts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (await res.json()) {
+                toggleModal('debtModal');
+                fetchDebts();
+            }
+        }
+
+        async function deleteDebt(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa khoản nợ này?")) return;
+            const res = await fetch(`/api/debts/${id}`, { method: 'DELETE' });
+            if (await res.json()) fetchDebts();
+        }
+
         window.onload = async () => {
             await fetchTransactions();
             await fetchSavings();
             await updateAllCharts();
+            await fetchDebts();
             lucide.createIcons();
         };
     </script>

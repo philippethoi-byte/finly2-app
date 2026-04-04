@@ -58,7 +58,7 @@ app.put('/api/transactions/:id', async (req, res) => {
             .update({ 
                 amount, 
                 date, 
-                category, 
+                category,   
                 source, 
                 note, 
                 type 
@@ -192,4 +192,160 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'Index.html'));
 });
 
+
+
+
+// ==========================================
+// API QUẢN LÝ NỢ (DEBTS)
+// ==========================================
+
+// 1. GET: Lấy danh sách tất cả khoản nợ
+app.get('/api/debts', async (req, res) => {
+    const { data, error } = await supabase
+        .from('debts')
+        .select('*')
+        .order('created_at', { ascending: false });
+    
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    res.json({ success: true, data });
+});
+
+// 2. POST: Thêm khoản nợ mới
+app.post('/api/debts', async (req, res) => {
+    const { debt_name, creditor_debtor, type, amount, interest_rate, interest_period, due_date, note } = req.body;
+    
+    const { data, error } = await supabase
+        .from('debts')
+        .insert([{
+            debt_name,
+            creditor_debtor,
+            type, // 'owe_to' hoặc 'owe_me'
+            amount,
+            remaining_amount: amount, // Mới tạo thì nợ gốc = số tiền vay
+            interest_rate,
+            interest_period,
+            due_date,
+            note,
+            status: 'active'
+        }])
+        .select();
+
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    res.json({ success: true, data });
+});
+
+// 3. PUT: Cập nhật thông tin khoản nợ
+app.put('/api/debts/:id', async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const { data, error } = await supabase
+        .from('debts')
+        .update(updateData)
+        .eq('id', id)
+        .select();
+
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    res.json({ success: true, data });
+});
+
+// 4. DELETE: Xóa khoản nợ (Sẽ tự động xóa debt_logs nhờ ON DELETE CASCADE)
+app.delete('/api/debts/:id', async (req, res) => {
+    const { id } = req.params;
+    const { error } = await supabase.from('debts').delete().eq('id', id);
+
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    res.json({ success: true, message: "Đã xóa khoản nợ thành công" });
+});
+
+// ==========================================
+// API NHẬT KÝ TRẢ NỢ (DEBT LOGS)
+// ==========================================
+
+// 1. GET: Lấy lịch sử trả của một khoản nợ cụ thể
+app.get('/api/debts/:id/logs', async (req, res) => {
+    const { id } = req.params;
+    const { data, error } = await supabase
+        .from('debt_logs')
+        .select('*')
+        .eq('debt_id', id)
+        .order('payment_date', { ascending: false });
+
+    if (error) return res.status(500).json({ success: false, message: error.message });
+    res.json({ success: true, data });
+});
+
+// 2. POST: Thực hiện trả nợ (Gồm Gốc + Lãi)
+app.post('/api/debts/pay', async (req, res) => {
+    const { debt_id, principal_paid, interest_paid, payment_date, note } = req.body;
+
+    try {
+        // BƯỚC A: Ghi log trả nợ
+        const { error: logError } = await supabase
+            .from('debt_logs')
+            .insert([{
+                debt_id,
+                principal_paid,
+                interest_paid,
+                payment_date,
+                note
+            }]);
+
+        if (logError) throw logError;
+
+        // BƯỚC B: Cập nhật bảng debts (Trừ tiền gốc còn lại và cộng dồn lãi đã trả)
+        // Lấy dữ liệu hiện tại để tính toán
+        const { data: debt } = await supabase.from('debts').select('*').eq('id', debt_id).single();
+        
+        const newRemaining = debt.remaining_amount - principal_paid;
+        const newTotalInterest = (Number(debt.total_interest_paid) || 0) + Number(interest_paid);
+        const newStatus = newRemaining <= 0 ? 'completed' : 'active';
+
+        const { error: updateError } = await supabase
+            .from('debts')
+            .update({ 
+                remaining_amount: newRemaining,
+                total_interest_paid: newTotalInterest,
+                status: newStatus
+            })
+            .eq('id', debt_id);
+
+        if (updateError) throw updateError;
+
+        res.json({ success: true, message: "Đã cập nhật khoản thanh toán thành công" });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3. DELETE: Xóa một lần trả tiền (Cần cộng lại tiền vào bảng debts nếu xóa)
+app.delete('/api/debt-logs/:logId', async (req, res) => {
+    const { logId } = req.params;
+    
+    try {
+        // Lấy thông tin log trước khi xóa để hoàn tác tiền
+        const { data: log } = await supabase.from('debt_logs').select('*').eq('id', logId).single();
+        if (!log) return res.status(404).json({ success: false, message: "Không tìm thấy log" });
+
+        const { data: debt } = await supabase.from('debts').select('*').eq('id', log.debt_id).single();
+
+        // Xóa log
+        await supabase.from('debt_logs').delete().eq('id', logId);
+
+        // Hoàn tác lại số dư trong bảng debts
+        await supabase.from('debts').update({
+            remaining_amount: debt.remaining_amount + log.principal_paid,
+            total_interest_paid: debt.total_interest_paid - log.interest_paid,
+            status: 'active'
+        }).eq('id', log.debt_id);
+
+        res.json({ success: true, message: "Đã xóa và hoàn tác số dư thành công" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.listen(PORT, () => console.log(`🚀 Server Finly chạy tại: http://localhost:${PORT}`));
+
+
