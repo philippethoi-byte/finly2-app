@@ -224,66 +224,81 @@
 				<!-- Toggle Chi tiêu / Thu nhập -->
 				<div class="flex gap-4 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
 					<label class="flex-1 text-center py-2 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-red-600 has-[:checked]:shadow-sm dark:has-[:checked]:bg-gray-700">
-						<input type="radio" name="type" value="expense" checked class="hidden"> 
+						<input type="radio" name="type" value="expense" checked class="hidden" onchange="toggleTransactionMode()"> 
 						<span class="text-sm font-bold">Chi tiêu</span>
 					</label>
 					<label class="flex-1 text-center py-2 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-emerald-600 has-[:checked]:shadow-sm dark:has-[:checked]:bg-gray-700">
-						<input type="radio" name="type" value="income" class="hidden"> 
+						<input type="radio" name="type" value="income" class="hidden" onchange="toggleTransactionMode()"> 
 						<span class="text-sm font-bold">Thu nhập</span>
 					</label>
+                    <label class="flex-1 text-center py-2 rounded-lg cursor-pointer transition-all has-[:checked]:bg-[#25D366] has-[:checked]:text-white has-[:checked]:shadow-sm dark:has-[:checked]:bg-[#25D366]">
+                        <input type="radio" name="type" value="import" class="hidden" onchange="toggleTransactionMode()"> 
+                        <span class="text-sm font-bold"><i data-lucide="message-circle" class="w-4 h-4 inline-block mb-0.5"></i> Import</span>
+                    </label>
 				</div>
+                <div id="manual-transaction-form" class="space-y-4">
+                    <!-- Số tiền - hỗ trợ format Việt Nam -->
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="amount" 
+                            placeholder="Số tiền (₫)"
+                            class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-brand-500 font-bold text-lg">
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-lg font-medium">₫</div>
+                    </div>
 
-				<!-- Số tiền - hỗ trợ format Việt Nam -->
-				<div class="relative">
-					<input 
-						type="text" 
-						id="amount" 
-						placeholder="Số tiền (₫)"
-						class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-brand-500 font-bold text-lg">
-					<div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-lg font-medium">₫</div>
-				</div>
+                    <!-- Ngày + Danh mục (có icon) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <input 
+                            type="date" 
+                            id="date" 
+                            class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
+                        
+                        <select 
+                            id="category" 
+                            class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
+                            <!-- JS sẽ tự populate với icon -->
+                        </select>
+                    </div>
 
-				<!-- Ngày + Danh mục (có icon) -->
-				<div class="grid grid-cols-2 gap-4">
-					<input 
-						type="date" 
-						id="date" 
-						class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
-					
-					<select 
-						id="category" 
-						class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
-						<!-- JS sẽ tự populate với icon -->
-					</select>
-				</div>
+                    <!-- Nguồn - chuyển thành select -->
+                    <select 
+                        id="source" 
+                        class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
+                        <option value="Tiền mặt">💵 Tiền mặt</option>
+                        <option value="Tiền mặt">💵 Tiền mặt</option>
+                        <option value="Ví">📱 Ví</option>
+                        <option value="Ngân hàng">🏦 Ngân hàng</option>
+                    </select>
 
-				<!-- Nguồn - chuyển thành select -->
-				<select 
-					id="source" 
-					class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
-					<option value="Tiền mặt">💵 Tiền mặt</option>
-					<option value="Tiền mặt">💵 Tiền mặt</option>
-					<option value="Ví">📱 Ví</option>
-					<option value="Ngân hàng">🏦 Ngân hàng</option>
-				</select>
+                    <!-- Ghi chú -->
+                    <textarea 
+                        id="note" 
+                        placeholder="Ghi chú..." 
+                        class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none h-24 resize-none"></textarea>
 
-				<!-- Ghi chú -->
-				<textarea 
-					id="note" 
-					placeholder="Ghi chú..." 
-					class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none h-24 resize-none"></textarea>
-
-				<!-- Buttons -->
-				<div class="flex gap-3 pt-4">
-					<button onclick="toggleModal('transactionModal')" 
-							class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">
-						Hủy
-					</button>
-					<button onclick="saveTransaction()" 
-							class="flex-1 py-4 bg-brand-600 text-white rounded-2xl font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-700 transition-colors">
-						Lưu lại
-					</button>
-				</div>
+                    <!-- Buttons -->
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="toggleModal('transactionModal')" 
+                                class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">
+                            Hủy
+                        </button>
+                        <button onclick="saveTransaction()" 
+                                class="flex-1 py-4 bg-brand-600 text-white rounded-2xl font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-700 transition-colors">
+                            Lưu lại
+                        </button>
+                    </div>
+                </div>
+                <div id="import-transaction-form" class="space-y-4 hidden">
+                    <textarea id="whatsapp-content" rows="6" 
+                        placeholder="Dán tin nhắn từ WhatsApp vào đây...&#10;&#10;Ví dụ:&#10;chi cafe 15k&#10;thu lương tháng 3 65tr" 
+                        class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-mono text-sm focus:ring-2 focus:ring-[#25D366] resize-none"></textarea>
+                    
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="toggleModal('transactionModal')" class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">Đóng</button>
+                        <button onclick="processWhatsAppImport()" class="flex-1 py-4 bg-[#25D366] hover:bg-green-600 text-white rounded-2xl font-bold shadow-lg shadow-green-500/20 transition-colors">Xử lý dữ liệu</button>
+                    </div>
+                </div>
 			</div>
 		</div>
 	</div>
@@ -359,6 +374,191 @@
         };
 
         const formatMoney = (amount) => new Intl.NumberFormat('vi-VN').format(amount || 0) + ' ₫';
+        // ==========================================
+        // TÍNH NĂNG IMPORT BẰNG NGÔN NGỮ TỰ NHIÊN (NLP)
+        // ==========================================
+
+        // Từ điển Mapping từ khóa vào Danh mục
+        const CATEGORY_MAP = {
+            expense: {
+                "Ăn uống": ["cafe", "ăn", "uống", "phở", "bún", "nhậu", "mì", "cơm", "trà sữa", "thịt", "cá", "siêu thị"],
+                "Di chuyển": ["xăng", "xe", "grab", "taxi", "bus", "xe ôm", "phà", "vé xe"],
+                "Y tế & Sức khỏe": ["thuốc", "bệnh viện", "khám", "vitamin", "gym", "yoga", "nha khoa"],
+                "Mua sắm": ["quần áo", "giày", "shopee", "tiki", "lazada", "mỹ phẩm", "đồ gia dụng"],
+                "Giải trí": ["phim", "netflix", "du lịch", "karaoke", "game", "sách", "vé xem"],
+                "Gia đình & Con cái": ["tả", "sữa", "học phí con", "đồ chơi", "biếu", "quà lễ"],
+                "Tiền nhà": ["tiền điện", "điện thoại", "tiền nước", "internet", "wifi", "thuê nhà", "chung cư", "quản lý"],
+                "Bảo hiểm": ["manulife", "daichi", "bảo hiểm", "bhyt"],
+                "Trả nợ": ["trả nợ", "trả góp", "lãi vay", "tín dụng"],
+                "Học phí / chi phí giáo dục cố định": ["khóa học", "học phí", "anh văn", "kỹ năng", "giáo dục"],
+                "Tiết kiệm & Đầu tư": ["vàng", "chứng khoán", "coin", "tiết kiệm"]
+            },
+            income: {
+                "Lương": ["lương", "salary", "thu nhập"],
+                "Thưởng": ["thưởng", "bonus"],
+                "Phụ cấp": ["phụ cấp", "allowance", "ăn trưa", "xăng xe"],
+                "Kinh doanh nhỏ": ["bán hàng", "lợi nhuận", "tiền hàng"],
+                "Lãi tiết kiệm ngân hàng": ["lãi ngân hàng", "tiền lãi"],
+                "Cho thuê": ["cho thuê", "tiền nhà"],
+                "Tiền trợ cấp": ["lì xì", "trợ cấp", "từ thiện"]
+            }
+        };
+
+        // Hàm điều khiển ẩn/hiện form khi bấm tab
+        function toggleTransactionMode() {
+            const mode = document.querySelector('input[name="type"]:checked').value;
+            const manualForm = document.getElementById('manual-transaction-form');
+            const importForm = document.getElementById('import-transaction-form');
+            
+            if (mode === 'import') {
+                manualForm.classList.add('hidden');
+                importForm.classList.remove('hidden');
+            } else {
+                manualForm.classList.remove('hidden');
+                importForm.classList.add('hidden');
+                updateCategories(); // Load lại danh mục tương ứng
+            }
+        }
+
+        // Hàm NLP bóc tách văn bản
+        function parseFinlyText(rawText) {
+            if (!rawText || !rawText.trim()) return null;
+
+            // 1. DỌN DẸP TIỀN TỐ WHATSAPP
+            // Regex này sẽ tìm và tự động cắt bỏ đoạn "[13:29, 4/4/2026] Philip: "
+            let cleanText = rawText.replace(/^\[.*?\]\s*[^:]+:\s*/, '').trim();
+            const input = cleanText.toLowerCase();
+
+            if (!input) return null;
+
+            // 2. XÁC ĐỊNH LOẠI (THU/CHI)
+            let type = 'expense';
+            if (input.startsWith('thu ') || input.includes('nhận ') || input.includes('lương ') || input.includes('thêm ') || input.includes('ghi có ')) {
+                type = 'income';
+            }
+
+            // 3. TÌM SỐ TIỀN
+            // Chỉ tìm số tiền trên đoạn văn bản đã được dọn dẹp (cleanText)
+            const amountMatch = input.match(/(\d+[.,]?\d*)\s*(k|tr|triệu|m|tỷ)?/);
+            let amount = 0;
+            if (amountMatch) {
+                let rawAmount = amountMatch[1].replace(',', '.');
+                let unit = amountMatch[2];
+                
+                amount = parseFloat(rawAmount);
+                if (unit === 'k') amount *= 1000;
+                else if (unit === 'tr' || unit === 'triệu' || unit === 'm') amount *= 1000000;
+                else if (unit === 'tỷ') amount *= 1000000000;
+            }
+
+            // Bỏ qua nếu dòng này không có tiền (ví dụ: copy nhầm dòng chat bình thường)
+            if (amount === 0) return null;
+
+            // 4. MAPPING DANH MỤC
+            let category = "Khác";
+            const keywords = CATEGORY_MAP[type];
+            
+            for (const [catName, list] of Object.entries(keywords)) {
+                if (list.some(keyword => input.includes(keyword))) {
+                    category = catName;
+                    break;
+                }
+            }
+
+            // 5. LỌC NỘI DUNG GHI CHÚ CHO SẠCH
+            // Regex động: Tìm đúng cụm số tiền (vd: 12k) để xóa khỏi ghi chú
+            let amountRegex = new RegExp(amountMatch[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+            let description = cleanText
+                .replace(/^(thu|chi)\s+/i, '') // Xóa chữ thu/chi ở đầu
+                .replace(amountRegex, '')      // Xóa cụm số tiền
+                .replace(/_/g, ' ')            // Đổi dấu gạch dưới thành khoảng trắng (nếu có)
+                .replace(/\s+/g, ' ')          // Xóa các khoảng trắng thừa
+                .trim();
+
+            if (!description || description === '') description = category;
+
+            // 6. LẤY CHÍNH XÁC NGÀY TỪ TIN NHẮN (Tự động hóa tuyệt đối)
+            // Phân tích: "[13:29, 4/4/2026]" -> Trích xuất được ngày 4 tháng 4 năm 2026
+            let date = new Date().toISOString().split('T')[0]; // Mặc định là hôm nay nếu không thấy
+            const dateMatch = rawText.match(/^\[.*?(\d{1,2})\/(\d{1,2})\/(\d{4}).*?\]/);
+            
+            if (dateMatch) {
+                let d = dateMatch[1].padStart(2, '0'); // Thêm số 0 nếu là số duy nhất (4 -> 04)
+                let m = dateMatch[2].padStart(2, '0');
+                let y = dateMatch[3];
+                date = `${y}-${m}-${d}`; // Định dạng chuẩn YYYY-MM-DD để đưa vào Database
+            }
+
+            // Trả kết quả về cho hàm processWhatsAppImport
+            return {
+                amount: amount,
+                date: date,
+                category: category,
+                source: 'Tiền mặt',
+                note: description,
+                type: type
+            };
+        }
+
+        // Hàm xử lý khi bấm nút "Xử lý dữ liệu"
+        async function processWhatsAppImport() {
+            const content = document.getElementById('whatsapp-content').value;
+            if (!content.trim()) {
+                alert("Vui lòng dán nội dung tin nhắn!");
+                return;
+            }
+
+            const lines = content.split('\n');
+            const transactionsToSave = [];
+
+            // Duyệt qua từng dòng và phân tích
+            lines.forEach(line => {
+                const parsedData = parseFinlyText(line);
+                if (parsedData) {
+                    transactionsToSave.push(parsedData);
+                }
+            });
+
+            if (transactionsToSave.length === 0) {
+                alert("Không tìm thấy giao dịch nào chứa số tiền hợp lệ. Vui lòng kiểm tra lại cấu trúc.");
+                return;
+            }
+
+            // Gửi từng giao dịch lên API
+            try {
+                const btn = document.querySelector('button[onclick="processWhatsAppImport()"]');
+                btn.innerText = "Đang xử lý...";
+                btn.disabled = true;
+
+                // Dùng Promise.all để gửi đồng loạt các request lên Server
+                const promises = transactionsToSave.map(payload => 
+                    fetch('/api/transactions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    })
+                );
+
+                await Promise.all(promises);
+
+                // Reset và đóng form khi thành công
+                alert(`✅ Đã import thành công ${transactionsToSave.length} giao dịch!`);
+                document.getElementById('whatsapp-content').value = '';
+                toggleModal('transactionModal');
+                
+                // Refresh lại dữ liệu Dashboard
+                await fetchTransactions();
+                await updateAllCharts();
+                
+            } catch (error) {
+                console.error("Lỗi khi import:", error);
+                alert("❌ Có lỗi xảy ra khi lưu dữ liệu lên hệ thống.");
+            } finally {
+                const btn = document.querySelector('button[onclick="processWhatsAppImport()"]');
+                btn.innerText = "Xử lý dữ liệu";
+                btn.disabled = false;
+            }
+        }
 
         // --- HÀM CẬP NHẬT BIỂU ĐỒ (Đã thêm cơ chế an toàn dữ liệu) ---
         async function updateAllCharts() {
