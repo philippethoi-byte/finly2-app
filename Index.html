@@ -209,7 +209,7 @@
                 </div>
 				<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Tổng tiết kiệm</p>
-                    <h3 id="kpi-expense-saving" class="text-2xl font-bold text-success">0 ₫</h3>
+                    <h3 id="kpi-saving" class="text-2xl font-bold text-success">0 ₫</h3>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="savings-list"></div>
@@ -700,7 +700,7 @@
 				});
 
 				// 2. HIỂN THỊ LÊN KPI TRÊN TAB TIẾT KIỆM
-				const kpiSavingEl = document.getElementById('kpi-expense-saving');
+				const kpiSavingEl = document.getElementById('kpi-saving');
 				if (kpiSavingEl) {
 					kpiSavingEl.innerText = formatMoney(totalSaved);
 				}
