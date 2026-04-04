@@ -38,7 +38,7 @@
             <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
                 <i data-lucide="wallet" class="w-6 h-6"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">Finly</h1>
+            <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">Finly V2</h1>
         </div>
         <nav class="space-y-2 flex-1">
             <button onclick="switchView('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all active bg-brand-50 dark:bg-brand-900/20 text-brand-600">
@@ -53,9 +53,7 @@
             <button onclick="switchView('savings', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
                 <i data-lucide="piggy-bank" class="w-5 h-5"></i> <span class="font-medium">Tiết kiệm</span>
             </button>
-            <button onclick="switchView('reports', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
-                <i data-lucide="trending-up" class="w-5 h-5"></i> <span class="font-medium">Báo cáo</span>
-            </button>
+
         </nav>
     </aside>
 
@@ -108,18 +106,37 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm w-full overflow-hidden">
                     <h4 class="font-bold mb-6 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-5 h-4"></i> Dòng tiền hàng tháng</h4>
                     <div class="h-64 w-full relative"><canvas id="cashflowChart"></canvas></div>
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm w-full overflow-hidden">
                     <h4 class="font-bold mb-6">Phân bổ chi tiêu</h4>
                     <div class="h-64 w-full relative"><canvas id="expensePieChart"></canvas></div>
                 </div>
+				                
+					<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+						<div class="flex items-center justify-between mb-6">
+							<h4 class="font-bold text-lg">Tình hình ngân sách</h4>
+							
+							<button onclick="openBudgetModal()" 
+									class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm shadow-sm shadow-brand-500/30 transition-all active:scale-[0.97]">
+								<!-- Icon + -->
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+								</svg>
+								<span>Thêm</span>
+							</button>
+						</div>
+						<div id="budget-summary-list" class="space-y-6"></div>
+					</div>
             </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+			
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
                 <div class="bg-white dark:bg-dark-card rounded-2xl border border-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
                     <div class="p-5 border-b dark:border-dark-border flex justify-between items-center">
                         <h4 class="font-bold">Giao dịch gần đây</h4>
@@ -127,11 +144,7 @@
                     </div>
                     <div id="recent-transactions-list" class="divide-y dark:divide-dark-border"></div>
                 </div>
-                
-                <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-                    <h4 class="font-bold mb-6">Tình hình ngân sách</h4>
-                    <div id="budget-summary-list" class="space-y-6"></div>
-                </div>
+
             </div>
         </div>
 
@@ -155,17 +168,41 @@
         </div>
 
         <div id="view-budgets" class="view-section space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-bold">Thiết lập ngân sách</h2>
-                <button onclick="openBudgetModal()" class="bg-brand-600 text-white px-4 py-2 rounded-xl font-bold text-sm">Cài đặt mới</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="budgets-grid"></div>
+					<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+						<div class="flex items-center justify-between mb-6">
+							<h4 class="font-bold text-lg">Tình hình ngân sách</h4>
+							
+							<button onclick="openBudgetModal()" 
+									class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm shadow-sm shadow-brand-500/30 transition-all active:scale-[0.97]">
+								<!-- Icon + -->
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+								</svg>
+								<span>Thêm</span>
+							</button>
+						</div>
+						<div id="budget-summary-list" class="space-y-6"></div>
+					</div>
         </div>
 
         <div id="view-savings" class="view-section space-y-6">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-bold">Mục tiêu tiết kiệm</h2>
                 <button onclick="toggleModal('savingModal')" class="bg-success text-white px-4 py-2 rounded-xl font-bold text-sm">Tạo mục tiêu</button>
+            </div>
+				    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng thu nhập</p>
+                    <h3 id="kpi-income" class="text-2xl font-bold text-success">0 ₫</h3>
+                </div>
+                <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu</p>
+                    <h3 id="kpi-expense" class="text-2xl font-bold text-danger">0 ₫</h3>
+                </div>
+                <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại</p>
+                    <h3 id="kpi-balance" class="text-2xl font-bold">0 ₫</h3>
+                </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="savings-list"></div>
         </div>
@@ -219,12 +256,15 @@
 					</select>
 				</div>
 
-				<!-- Nguồn -->
-				<input 
-					type="text" 
+				<!-- Nguồn - chuyển thành select -->
+				<select 
 					id="source" 
-					placeholder="Nguồn (Ví, Thẻ, NH...)" 
-					class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
+					class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
+					<option value="">💵 Tiền mặt</option>
+					<option value="Tiền mặt">💵 Tiền mặt</option>
+					<option value="Ví">📱 Ví</option>
+					<option value="Ngân hàng">🏦 Ngân hàng</option>
+				</select>
 
 				<!-- Ghi chú -->
 				<textarea 
@@ -274,6 +314,7 @@
     </div>
 
     <div id="savingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+	
         <div class="bg-white dark:bg-dark-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl">
             <h3 class="text-xl font-bold mb-6">Mục tiêu mới</h3>
             <div class="space-y-4">
@@ -286,6 +327,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <script>
