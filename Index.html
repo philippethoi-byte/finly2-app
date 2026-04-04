@@ -66,8 +66,8 @@
         </button>
         
         <div class="relative -top-5">
-            <button onclick="toggleModal('transactionModal')" class="bg-brand-600 hover:bg-brand-700 text-white p-4 rounded-full shadow-lg shadow-brand-500/40 flex items-center justify-center transition-transform active:scale-95">
-                <i data-lucide="plus" class="w-6 h-6"></i>
+            <button type="button" onclick="toggleModal('transactionModal')" title="Thêm giao dịch" aria-label="Thêm giao dịch" class="bg-brand-600 hover:bg-brand-700 text-white p-4 rounded-full shadow-lg shadow-brand-500/40 flex items-center justify-center transition-transform active:scale-95">
+                <i data-lucide="circle-plus" class="w-6 h-6"></i>
             </button>
         </div>
 
@@ -86,8 +86,8 @@
                     <h2 class="text-3xl font-bold mb-1">Chào Hạo Nhiên!</h2>
                     <p class="text-gray-500">Hôm nay bạn đã chi tiêu thế nào?</p>
                 </div>
-                <button onclick="toggleModal('transactionModal')" class="hidden md:flex bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-xl font-bold items-center gap-2 shadow-lg shadow-brand-500/20 transition-all active:scale-95">
-                    <i data-lucide="plus" class="w-5 h-5"></i> Thêm giao dịch
+                <button type="button" onclick="toggleModal('transactionModal')" title="Thêm giao dịch" aria-label="Thêm giao dịch" class="hidden md:flex bg-brand-600 hover:bg-brand-700 text-white p-3.5 rounded-xl items-center justify-center shadow-lg shadow-brand-500/20 transition-all active:scale-95">
+                    <i data-lucide="circle-plus" class="w-6 h-6"></i>
                 </button>
             </div>
 
@@ -103,6 +103,7 @@
 				<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu (tháng)</p>
                     <h3 id="kpi-expense-mon" class="text-2xl font-bold text-danger">0 ₫</h3>
+                    <div id="kpi-expense-mon-compare" class="mt-2 text-xs min-h-[2.75rem]" aria-live="polite"></div>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại (tháng)</p>
@@ -127,13 +128,8 @@
 						<div class="flex items-center justify-between mb-6">
 							<h4 class="font-bold text-lg">Tình hình ngân sách</h4>
 							
-							<button onclick="openBudgetModal()" 
-									class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm shadow-sm shadow-brand-500/30 transition-all active:scale-[0.97]">
-								<!-- Icon + -->
-								<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-								</svg>
-								<span>Thêm</span>
+							<button type="button" onclick="openBudgetModal()" title="Thêm ngân sách" aria-label="Thêm ngân sách" class="flex bg-brand-600 hover:bg-brand-700 text-white p-3.5 rounded-xl items-center justify-center shadow-lg shadow-brand-500/20 transition-all active:scale-95">
+								<i data-lucide="circle-plus" class="w-6 h-6"></i>
 							</button>
 						</div>
 						<div id="budget-summary-list" class="space-y-6"></div>
@@ -176,13 +172,8 @@
 						<div class="flex items-center justify-between mb-6">
 							<h4 class="font-bold text-lg">Tình hình ngân sách</h4>
 							
-							<button onclick="openBudgetModal()" 
-									class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm shadow-sm shadow-brand-500/30 transition-all active:scale-[0.97]">
-								<!-- Icon + -->
-								<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-								</svg>
-								<span>Thêm</span>
+							<button type="button" onclick="openBudgetModal()" title="Thêm ngân sách" aria-label="Thêm ngân sách" class="flex bg-brand-600 hover:bg-brand-700 text-white p-3.5 rounded-xl items-center justify-center shadow-lg shadow-brand-500/20 transition-all active:scale-95">
+								<i data-lucide="circle-plus" class="w-6 h-6"></i>
 							</button>
 						</div>
 						<div id="view-budget-summary-list" class="space-y-6"></div>
@@ -192,7 +183,9 @@
         <div id="view-savings" class="view-section space-y-6">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-bold">Mục tiêu tiết kiệm</h2>
-                <button onclick="toggleModal('savingModal')" class="bg-success text-white px-4 py-2 rounded-xl font-bold text-sm">Tạo gói tiết kiệm</button>
+                <button type="button" onclick="toggleModal('savingModal')" title="Tạo gói tiết kiệm" aria-label="Tạo gói tiết kiệm" class="flex bg-success hover:bg-emerald-600 text-white p-3.5 rounded-xl items-center justify-center shadow-lg shadow-emerald-500/25 transition-all active:scale-95">
+                    <i data-lucide="circle-plus" class="w-6 h-6"></i>
+                </button>
             </div>
 		    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
@@ -268,7 +261,7 @@
 				<select 
 					id="source" 
 					class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
-					<option value="">💵 Tiền mặt</option>
+					<option value="Tiền mặt">💵 Tiền mặt</option>
 					<option value="Tiền mặt">💵 Tiền mặt</option>
 					<option value="Ví">📱 Ví</option>
 					<option value="Ngân hàng">🏦 Ngân hàng</option>
@@ -583,10 +576,62 @@
             } catch (e) { console.error(e); }
         }
 
+        function renderMonthExpenseMoM(currentExpense, prevMonthExpense) {
+            const el = document.getElementById('kpi-expense-mon-compare');
+            if (!el) return;
+
+            const cur = Number(currentExpense) || 0;
+            const prev = Number(prevMonthExpense) || 0;
+            let html = '';
+
+            if (cur === 0 && prev === 0) {
+                html = '<p class="text-gray-400 dark:text-gray-500 leading-snug">Chưa có chi tiêu ghi nhận cho tháng này và tháng trước.</p>';
+            } else if (prev === 0 && cur > 0) {
+                html = `
+                    <div class="flex items-start gap-2">
+                        <span class="text-danger shrink-0 mt-0.5"><i data-lucide="trending-up" class="w-3 h-3"></i></span>
+                        <div>
+                            <p class="font-semibold text-danger">Có chi tiêu mới — tháng trước chưa ghi nhận</p>
+                        </div>
+                    </div>`;
+            } else if (cur > prev) {
+                const pct = prev > 0 ? Math.round(((cur - prev) / prev) * 100) : 100;
+                html = `
+                    <div class="flex items-start gap-2">
+                        <span class="text-danger shrink-0 mt-0.5"><i data-lucide="trending-up" class="w-3 h-3"></i></span>
+                        <div>
+                            <p class="font-semibold text-danger">Tăng ${pct}% so với tháng trước</p>
+                        </div>
+                    </div>`;
+            } else if (cur < prev) {
+                const pct = prev > 0 ? Math.round(((prev - cur) / prev) * 100) : 0;
+                html = `
+                    <div class="flex items-start gap-2">
+                        <span class="text-success shrink-0 mt-0.5"><i data-lucide="trending-down" class="w-3 h-3"></i></span>
+                        <div>
+                            <p class="font-semibold text-success">Giảm ${pct}% so với tháng trước 8-) </p>
+                        </div>
+                    </div>`;
+            } else {
+                html = `
+                    <div class="flex items-start gap-2">
+                        <span class="text-gray-400 shrink-0 mt-0.5"><i data-lucide="equal" class="w-3 h-33"></i></span>
+                        <div>
+                            <p class="font-semibold text-gray-500 dark:text-gray-400">Bằng tháng trước</p>
+                        </div>
+                    </div>`;
+            }
+
+            el.innerHTML = html;
+            if (html.includes('data-lucide')) lucide.createIcons();
+        }
+
         function renderDashboard(data) {
 			const now = new Date();
 			const currentMonth = now.getMonth(); // 0 - 11
 			const currentYear = now.getFullYear();
+            const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
 			// Biến tích lũy cho Năm
 			let yearIncome = 0;
@@ -595,6 +640,7 @@
 			// Biến tích lũy cho Tháng
 			let monthIncome = 0;
 			let monthExpense = 0;
+            let prevMonthExpense = 0;
 
 			data.forEach(t => {
 				const tDate = new Date(t.date);
@@ -619,6 +665,10 @@
 						}
 					}
 				}
+
+                if (tYear === prevYear && tMonth === prevMonth && t.type !== 'income') {
+                    prevMonthExpense += tAmount;
+                }
 			});
 
 			// --- CẬP NHẬT GIAO DIỆN ---
@@ -639,6 +689,8 @@
 			// KPI THEO THÁNG (Các ID mới bạn yêu cầu)
 			if (document.getElementById('kpi-expense-mon')) 
 				document.getElementById('kpi-expense-mon').innerText = formatMoney(monthExpense);
+
+            renderMonthExpenseMoM(monthExpense, prevMonthExpense);
 			
 			if (document.getElementById('kpi-balance-mon')) 
 				document.getElementById('kpi-balance-mon').innerText = formatMoney(monthIncome - monthExpense);
@@ -677,11 +729,11 @@
         }
 
         async function saveTransaction() {
-			// Lấy và làm sạch số tiền (chuyển "1.234.567" → 1234567)
-			let amountStr = document.getElementById('amount').value;
-			const amount = parseInt(amountStr.replace(/\./g, '')) || 0;
+			// Bỏ mọi ký tự không phải số (1.234.567 / dấu cách / dấu phẩy) → số nguyên VND
+			const amountStr = document.getElementById('amount').value;
+			const amount = parseInt(String(amountStr).replace(/\D/g, ''), 10) || 0;
             const payload = {
-                amount: document.getElementById('amount').value,
+                amount,
                 date: document.getElementById('date').value,
                 category: document.getElementById('category').value,
                 source: document.getElementById('source').value,
