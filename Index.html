@@ -149,7 +149,27 @@
         </div>
 
         <div id="view-transactions" class="view-section space-y-6">
-            <h2 class="text-2xl font-bold">Lịch sử giao dịch</h2>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 class="text-2xl font-bold">Lịch sử giao dịch</h2>
+                
+                <div class="flex items-center gap-3 bg-white dark:bg-dark-card px-4 py-2 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                    <div class="flex items-center gap-2 text-gray-500 border-r dark:border-dark-border pr-3">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">Lọc:</span>
+                    </div>
+                    <input 
+                        type="month" 
+                        id="filter-month" 
+                        onchange="filterTransactions()"
+                        class="bg-transparent border-none focus:ring-0 text-sm font-bold text-brand-600 cursor-pointer outline-none">
+                </div>
+            </div>
+            <div id="chart-section" class="bg-white dark:bg-dark-card p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm mb-6">
+                <h3 class="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Phân bổ chi tiêu theo tháng</h3>
+                <div class="relative h-[300px] w-full flex justify-center">
+                    <canvas id="historyExpenseChart"></canvas>
+                </div>
+            </div>
             <div class="bg-white dark:bg-dark-card rounded-2xl border border-dark-border overflow-x-auto shadow-sm">
                 <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead class="bg-gray-50 dark:bg-gray-800/50">
@@ -218,7 +238,7 @@
 
     <div id="transactionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
 		<div class="bg-white dark:bg-dark-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl scale-in">
-			<h3 class="text-xl font-bold mb-6">Thêm giao dịch mới</h3>
+			<h3 id="modal-title" class="text-xl font-bold mb-6">Thêm giao dịch mới</h3>
 			
 			<div class="space-y-4">
 				<!-- Toggle Chi tiêu / Thu nhập -->
@@ -279,7 +299,7 @@
 
                     <!-- Buttons -->
                     <div class="flex gap-3 pt-4">
-                        <button onclick="toggleModal('transactionModal')" 
+                        <button onclick="openAddTransactionModal()" 
                                 class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">
                             Hủy
                         </button>
@@ -295,7 +315,7 @@
                         class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-mono text-sm focus:ring-2 focus:ring-[#25D366] resize-none"></textarea>
                     
                     <div class="flex gap-3 pt-4">
-                        <button onclick="toggleModal('transactionModal')" class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">Đóng</button>
+                        <button onclick="openAddTransactionModal()" class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">Đóng</button>
                         <button onclick="processWhatsAppImport()" class="flex-1 py-4 bg-[#25D366] hover:bg-green-600 text-white rounded-2xl font-bold shadow-lg shadow-green-500/20 transition-colors">Xử lý dữ liệu</button>
                     </div>
                 </div>
@@ -771,7 +791,16 @@
                 if (result.success) {
                     transactions = result.data;
                     renderDashboard(transactions);
-                    renderTransactionTable(transactions);
+                    // THAY ĐỔI TẠI ĐÂY:
+                    // Nếu input filter chưa có giá trị, hãy set mặc định là tháng hiện tại
+                    const filterInput = document.getElementById('filter-month');
+                    if (!filterInput.value) {
+                        const now = new Date();
+                        filterInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                    }
+                    
+                    // Gọi filter thay vì render trực tiếp
+                    filterTransactions();
                 }
             } catch (e) { console.error(e); }
         }
@@ -923,15 +952,24 @@
                         ${t.type === 'income' ? '+' : '-'} ${formatMoney(t.amount)}
                     </td>
                     <td class="p-4 text-sm text-gray-500 italic max-w-xs truncate">${t.note || ''}</td>
-                    <td class="p-4"><button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-danger"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                            <button onclick="editTransaction('${t.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Sửa">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteTransaction('${t.id}')" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
                 </tr>`).join('');
             lucide.createIcons();
         }
 
         async function saveTransaction() {
-			// Bỏ mọi ký tự không phải số (1.234.567 / dấu cách / dấu phẩy) → số nguyên VND
-			const amountStr = document.getElementById('amount').value;
-			const amount = parseInt(String(amountStr).replace(/\D/g, ''), 10) || 0;
+            const amountStr = document.getElementById('amount').value;
+            const amount = parseInt(String(amountStr).replace(/\D/g, ''), 10) || 0;
+            
             const payload = {
                 amount,
                 date: document.getElementById('date').value,
@@ -940,16 +978,34 @@
                 note: document.getElementById('note').value,
                 type: document.querySelector('input[name="type"]:checked').value
             };
-            await fetch('/api/transactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            toggleModal('transactionModal');
-            await fetchTransactions();
-            await updateAllCharts();
+
+            // Xác định Method và URL dựa trên biến editingTransactionId
+            const method = editingTransactionId ? 'PUT' : 'POST';
+            const url = editingTransactionId ? `/api/transactions/${editingTransactionId}` : '/api/transactions';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    toggleModal('transactionModal');
+                    editingTransactionId = null; // Quan trọng: Reset lại sau khi xong
+                    await fetchTransactions(); // Load lại bảng
+                    await updateAllCharts();   // Load lại biểu đồ
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error("Lỗi khi lưu:", error);
+            }
         }
 
+        let editingTransactionId = null; // Biến lưu ID đang sửa
         async function deleteTransaction(id) {
             if (confirm("Xóa giao dịch này?")) {
                 await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
@@ -958,6 +1014,54 @@
             }
         }
 
+        // Hàm mở Modal và đổ dữ liệu cũ vào để sửa
+        function editTransaction(id) {
+            const t = transactions.find(item => item.id === id);
+            if (!t) return;
+
+            editingTransactionId = id;
+
+            // 1. Đổi tiêu đề Modal
+            const modalTitle = document.getElementById('modal-title');
+            if (modalTitle) modalTitle.innerText = 'Cập nhật giao dịch';
+
+            // 2. Gán loại giao dịch (Thu/Chi)
+            const typeRadios = document.querySelectorAll('input[name="type"]');
+            typeRadios.forEach(r => {
+                if (r.value === t.type) r.checked = true;
+            });
+            
+            // 3. QUAN TRỌNG: Cập nhật danh sách Category của Type đó ngay lập tức
+            updateCategories();
+
+            // 4. Bây giờ mới gán giá trị cho các input
+            document.getElementById('amount').value = Number(t.amount).toLocaleString('vi-VN');
+            document.getElementById('date').value = t.date;
+            document.getElementById('source').value = t.source || '';
+            document.getElementById('note').value = t.note || '';
+            
+            // Gán Category (Lúc này danh sách option đã được nạp xong ở bước 3)
+            document.getElementById('category').value = t.category;
+
+            toggleModal('transactionModal');
+        }
+
+        // Hàm dùng cho nút "Thêm giao dịch mới" (Để đảm bảo form trống)
+        function openAddTransactionModal() {
+            editingTransactionId = null; // Reset về trạng thái thêm mới
+            
+            // Reset Form và tiêu đề
+            document.getElementById('amount').value = '';
+            document.getElementById('note').value = '';
+            document.getElementById('source').value = '';
+            document.getElementById('modal-title').innerText = 'Thêm giao dịch mới';
+            
+            // Mặc định ngày hôm nay
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
+            updateCategories();
+            toggleModal('transactionModal');
+        }
         async function fetchSavings() {
             try {
                 const res = await fetch('/api/saving');
@@ -1127,21 +1231,29 @@
 		};
 
 		// Cập nhật danh mục + icon khi đổi loại giao dịch
-		function updateCategories() {
-			const type = document.querySelector('input[name="type"]:checked').value;
-			const select = document.getElementById('category');
-			
-			select.innerHTML = '<option value="" disabled selected>-- Chọn danh mục --</option>';
-			
-			const categories = type === 'expense' ? categoryData.expense : categoryData.income;
-			
-			categories.forEach(cat => {
-				const option = document.createElement('option');
-				option.value = cat.value;
-				option.textContent = `${cat.icon} ${cat.value}`;
-				select.appendChild(option);
-			});
-		}
+        function updateCategories() {
+            // Lấy loại giao dịch hiện tại (expense hoặc income)
+            const typeElement = document.querySelector('input[name="type"]:checked');
+            if (!typeElement) return;
+            const type = typeElement.value;
+            
+            const categorySelect = document.getElementById('category');
+            if (!categorySelect) return;
+
+            // Xóa danh sách cũ
+            categorySelect.innerHTML = '<option value="">-- Chọn danh mục --</option>';
+            
+            // Sử dụng đúng biến categoryData của bạn
+            const categories = categoryData[type] || [];
+            
+            categories.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.value;
+                // Hiển thị cả Icon và Tên cho đẹp
+                option.textContent = `${item.icon} ${item.value}`;
+                categorySelect.appendChild(option);
+            });
+        }
 
 		// Format số tiền kiểu Việt Nam (10.000, 100.000...)
 		function setupAmountFormatter() {
@@ -1190,6 +1302,86 @@
 		}
 
         function openBudgetModal() { toggleModal('budgetModal'); }
+        // Thêm hàm này vào cuối phần script của bạn
+        function filterTransactions() {
+            const filterValue = document.getElementById('filter-month').value;
+            
+            let filtered = transactions;
+            if (filterValue) {
+                filtered = transactions.filter(t => t.date.startsWith(filterValue));
+            }
+
+            // Cập nhật bảng như cũ
+            renderTransactionTable(filtered);
+            
+            // Cập nhật thêm biểu đồ
+            updateHistoryChart(filtered);
+        }
+
+        let expenseChart = null; // Biến toàn cục để quản lý instance của biểu đồ
+        function updateHistoryChart(filteredData) {
+            const ctx = document.getElementById('historyExpenseChart').getContext('2d');
+            
+            // 1. Lọc chỉ lấy các giao dịch "Chi phí" (expense)
+            const expenses = filteredData.filter(t => t.type === 'expense');
+
+            // 2. Nhóm và cộng tổng theo danh mục
+            const totalsByCategory = expenses.reduce((acc, t) => {
+                acc[t.category] = (acc[t.category] || 0) + Number(t.amount);
+                return acc;
+            }, {});
+
+            const labels = Object.keys(totalsByCategory);
+            const dataValues = Object.values(totalsByCategory);
+
+            // 3. Nếu biểu đồ đã tồn tại thì hủy để vẽ mới (tránh lỗi đè chart)
+            if (expenseChart) {
+                expenseChart.destroy();
+            }
+
+            // 4. Cấu hình màu sắc (Palette màu hiện đại)
+            const colors = [
+                '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
+                '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'
+            ];
+
+            // 5. Khởi tạo biểu đồ
+            expenseChart = new Chart(ctx, {
+                type: 'doughnut', // Dùng doughnut nhìn sẽ hiện đại hơn pie
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 20
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    return ` ${value.toLocaleString('vi-VN')} VNĐ`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%' // Tạo lỗ hổng ở giữa cho đẹp
+                }
+            });
+        }
 
         window.onload = async () => {
             await fetchTransactions();

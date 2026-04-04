@@ -47,6 +47,32 @@ app.delete('/api/transactions/:id', async (req, res) => {
     res.json({ success: true });
 });
 
+// API Cập nhật giao dịch theo ID
+app.put('/api/transactions/:id', async (req, res) => {
+    const { id } = req.params;
+    const { amount, date, category, source, note, type } = req.body;
+
+    try {
+        const { data, error } = await supabase
+            .from('transactions')
+            .update({ 
+                amount, 
+                date, 
+                category, 
+                source, 
+                note, 
+                type 
+            })
+            .eq('id', id)
+            .select();
+
+        if (error) throw error;
+        
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 // ==========================================
 // API TIẾT KIỆM (SAVINGS)
 // ==========================================
