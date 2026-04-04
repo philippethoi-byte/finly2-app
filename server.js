@@ -187,10 +187,6 @@ app.post('/api/budgets', async (req, res) => {
     res.json({ success: !error });
 });
 
-// PHỤC VỤ GIAO DIỆN PHẢI NẰM Ở CUỐI CÙNG
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Index.html'));
-});
 
 
 
@@ -345,6 +341,13 @@ app.delete('/api/debt-logs/:logId', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+
+// PHỤC VỤ GIAO DIỆN PHẢI NẰM Ở CUỐI CÙNG
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Index.html'));
+});
+
 
 app.listen(PORT, () => console.log(`🚀 Server Finly chạy tại: http://localhost:${PORT}`));
 

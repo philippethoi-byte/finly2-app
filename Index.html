@@ -263,15 +263,42 @@
                     <table class="w-full text-left">
                         <thead class="bg-gray-50 dark:bg-gray-800/50">
                             <tr>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Khoản nợ / Đối tác</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Gốc còn lại</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Lãi suất</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Tổng lãi đã trả</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Trạng thái</th>
-                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 text-right">Thao tác</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500">Thông tin nợ</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500">Gốc ban đầu</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-danger">Còn lại</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500">Lãi suất / Dự tính lãi</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-orange-500">Đã trả lãi</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500 text-center">Hạn trả / Trạng thái</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500 text-right">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="debt-list" class="divide-y divide-gray-100 dark:divide-dark-border">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="debt-history-section" class="hidden mt-6 bg-white dark:bg-dark-card rounded-2xl border border-brand-100 dark:border-brand-900/30 overflow-hidden shadow-md">
+                <div class="p-5 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-brand-50/50 dark:bg-brand-900/10">
+                    <div>
+                        <h4 class="font-bold text-lg text-brand-700 dark:text-brand-400" id="history-debt-name">Lịch sử thanh toán</h4>
+                        <p class="text-sm text-gray-500" id="history-debt-info">Đang tải...</p>
+                    </div>
+                    <button onclick="closeDebtHistory()" class="p-2 bg-white dark:bg-dark-bg rounded-xl text-gray-400 hover:text-danger shadow-sm border border-gray-100 dark:border-dark-border transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 dark:bg-gray-800/50">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500">Ngày</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-success">Trả Gốc</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-orange-500">Trả Lãi</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500">Ghi chú</th>
+                                <th class="px-6 py-3 text-xs font-bold uppercase text-gray-500 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="debt-logs-list" class="divide-y divide-gray-100 dark:divide-dark-border">
                             </tbody>
                     </table>
                 </div>
@@ -462,6 +489,35 @@
                 <input type="date" id="due_date" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
                 <textarea id="debt_note" placeholder="Ghi chú" class="w-full p-4 rounded-xl border dark:bg-gray-800 dark:border-gray-700"></textarea>
                 <button onclick="saveDebt()" class="w-full bg-brand-600 text-white py-4 rounded-xl font-bold">Lưu khoản nợ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="payDebtModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-dark-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl scale-in">
+            <h3 id="pay-debt-title" class="text-xl font-bold mb-2">Thanh toán nợ</h3>
+            <p class="text-sm text-gray-500 mb-6" id="pay-debt-subtitle"></p>
+            
+            <input type="hidden" id="pay_debt_id">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Tiền gốc trả (₫)</label>
+                    <input type="text" id="pay_principal" placeholder="0" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-lg text-success">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Tiền lãi trả (₫)</label>
+                    <input type="text" id="pay_interest" placeholder="0" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-lg text-orange-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Ngày thanh toán</label>
+                    <input type="date" id="pay_date" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
+                </div>
+                <textarea id="pay_note" placeholder="Ghi chú (VD: Chuyển khoản VCB)..." class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none resize-none"></textarea>
+                
+                <div class="flex gap-3 pt-4">
+                    <button onclick="toggleModal('payDebtModal')" class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">Hủy</button>
+                    <button onclick="submitDebtPayment()" class="flex-1 py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-bold shadow-lg shadow-brand-500/20 transition-colors">Xác nhận</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1500,32 +1556,64 @@
             let totalOweMe = 0;
 
             list.innerHTML = debts.map(d => {
-                const amount = Number(d.remaining_amount) || 0;
-                const interestPaid = Number(d.total_interest_paid) || 0;
+                // ÁNH XẠ ĐÚNG TÊN CỘT TỪ SUPABASE:
+                const original = Number(d.amount) || 0;             // Gốc ban đầu (cột 'amount')
+                const remaining = Number(d.remaining_amount) || 0;  // Còn lại (cột 'remaining_amount')
+                const initialInterest = Number(d.total_interest) || 0; // Lãi dự tính (cột 'total_interest')
+                const paidInterest = Number(d.total_interest_paid) || 0;
                 
-                if (d.type === 'owe_to') totalOweTo += amount;
-                else totalOweMe += amount;
+                if (d.type === 'owe_to') totalOweTo += remaining;
+                else totalOweMe += remaining;
+
+                const dueDate = d.due_date ? new Date(d.due_date).toLocaleDateString('vi-VN') : '---';
 
                 return `
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-100 dark:border-dark-border text-sm">
                         <td class="px-6 py-4">
-                            <div class="font-semibold text-gray-900 dark:text-white">${d.debt_name}</div>
-                            <div class="text-xs text-gray-500">${d.creditor_debtor}</div>
+                            <div class="font-bold text-gray-900 dark:text-white">${d.debt_name}</div>
+                            <div class="text-[11px] text-gray-500 uppercase">${d.creditor_debtor}</div>
                         </td>
-                        <td class="px-6 py-4 font-bold ${d.type === 'owe_to' ? 'text-red-500' : 'text-emerald-500'}">
-                            ${amount.toLocaleString('vi-VN')} đ
+                        
+                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400 font-medium">
+                            ${original.toLocaleString('vi-VN')} đ
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">${d.interest_rate}% / ${d.interest_period === 'month' ? 'tháng' : 'năm'}</td>
-                        <td class="px-6 py-4 text-sm text-orange-500 font-medium">${interestPaid.toLocaleString('vi-VN')} đ</td>
+
+                        <td class="px-6 py-4 font-bold ${d.type === 'owe_to' ? 'text-danger' : 'text-success'}">
+                            ${remaining.toLocaleString('vi-VN')} đ
+                        </td>
+
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${d.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}">
+                            <div class="font-semibold text-gray-700 dark:text-gray-300">
+                                ${d.interest_rate}% / ${d.interest_period === 'year' ? 'năm' : 'tháng'}
+                            </div>
+                            <div class="text-[10px] text-orange-400 font-medium">
+                                Dự tính: ${initialInterest.toLocaleString('vi-VN')} đ
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4 text-orange-600 font-bold">
+                            ${paidInterest.toLocaleString('vi-VN')} đ
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+                            <div class="text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1">${dueDate}</div>
+                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${d.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}">
                                 ${d.status}
                             </span>
                         </td>
+
                         <td class="px-6 py-4 text-right">
-                            <button onclick="deleteDebt('${d.id}')" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <div class="flex items-center justify-end gap-2">
+                                <button onclick="openPayDebtModal('${d.id}')" class="p-2 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg" title="Thanh toán">
+                                    <i data-lucide="banknote" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="fetchDebtLogs('${d.id}')" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg" title="Lịch sử">
+                                    <i data-lucide="history" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deleteDebt('${d.id}')" class="p-2 text-gray-400 hover:text-danger rounded-lg" title="Xóa">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -1537,40 +1625,236 @@
         }
 
         function openAddDebtModal() {
-            editingDebtId = null;
-            document.getElementById('debt-modal-title').innerText = "Thêm khoản nợ mới";
-            // Reset form...
+            // Reset form
+            document.getElementById('debt_name').value = '';
+            document.getElementById('creditor_debtor').value = '';
+            document.getElementById('debt_amount').value = '';
+            document.getElementById('interest_rate').value = '0';
+            document.getElementById('due_date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('debt_note').value = '';
             toggleModal('debtModal');
         }
 
         async function saveDebt() {
-            const amount = parseInt(document.getElementById('debt_amount').value.replace(/\D/g, '')) || 0;
-            const payload = {
-                debt_name: document.getElementById('debt_name').value,
-                creditor_debtor: document.getElementById('creditor_debtor').value,
-                type: document.querySelector('input[name="debt_type"]:checked').value,
-                amount: amount,
-                interest_rate: document.getElementById('interest_rate').value,
-                due_date: document.getElementById('due_date').value,
-                note: document.getElementById('debt_note').value
-            };
+            try {
+                // 1. Lấy và làm sạch dữ liệu số
+                const amountRaw = document.getElementById('debt_amount').value;
+                const amount = parseInt(amountRaw.replace(/\D/g, '')) || 0;
+                
+                const interestRate = parseFloat(document.getElementById('interest_rate').value) || 0;
+                
+                // Giả sử bạn muốn tính sơ bộ tiền lãi ban đầu (Ví dụ: nợ 12 tháng)
+                // Bạn có thể tùy chỉnh công thức này hoặc để người dùng nhập
+                const totalInterestInitial = 0; 
 
-            const res = await fetch('/api/debts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+                // 2. Kiểm tra các trường bắt buộc
+                const debtName = document.getElementById('debt_name').value.trim();
+                const typeEl = document.querySelector('input[name="debt_type"]:checked');
+                
+                if (!debtName || amount <= 0 || !typeEl) {
+                    alert("Vui lòng nhập đầy đủ: Tên khoản nợ, Số tiền gốc và Loại nợ.");
+                    return;
+                }
 
-            if (await res.json()) {
-                toggleModal('debtModal');
-                fetchDebts();
+                // 3. Xây dựng Payload khớp với Database Schema trong server.js
+                const payload = {
+                    debt_name: debtName,
+                    creditor_debtor: document.getElementById('creditor_debtor').value || "Chưa xác định",
+                    type: typeEl.value, // 'owe_to' hoặc 'owe_me'
+                    amount: amount,                 // Gốc ban đầu
+                    remaining_amount: amount,       // Mới tạo thì còn lại = gốc
+                    interest_rate: interestRate,
+                    interest_period: 'month',       // Mặc định tháng
+                    total_interest: totalInterestInitial, 
+                    total_interest_paid: 0,         // Mới tạo thì chưa trả lãi
+                    due_date: document.getElementById('due_date').value || null,
+                    status: 'active',               // Luôn là active khi mới tạo
+                    note: document.getElementById('debt_note').value || ""
+                };
+
+                console.log("Đang gửi dữ liệu nợ:", payload);
+
+                // 4. Gửi API
+                const response = await fetch('/api/debts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Reset form sau khi thành công
+                    document.getElementById('debt_name').value = '';
+                    document.getElementById('debt_amount').value = '';
+                    
+                    toggleModal('debtModal');
+                    await fetchDebts(); // Load lại bảng nợ
+                    
+                    // Cập nhật lại các biểu đồ nếu cần
+                    if (typeof updateAllCharts === 'function') {
+                        await updateAllCharts();
+                    }
+                } else {
+                    alert("Lỗi từ Server: " + result.message);
+                }
+            } catch (error) {
+                console.error("Lỗi thực thi saveDebt:", error);
+                alert("Không thể kết nối đến server. Hãy đảm bảo server.js đang chạy.");
             }
         }
 
         async function deleteDebt(id) {
-            if (!confirm("Bạn có chắc chắn muốn xóa khoản nợ này?")) return;
-            const res = await fetch(`/api/debts/${id}`, { method: 'DELETE' });
-            if (await res.json()) fetchDebts();
+            if (!confirm("Bạn có muốn xóa khoản nợ này không?")) return;
+            try {
+                const res = await fetch(`/api/debts/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) fetchDebts();
+            } catch (error) {
+                console.error("Lỗi khi xóa:", error);
+            }
+        }
+
+
+        // ==========================================
+        // TÍNH NĂNG TRẢ NỢ VÀ XEM LỊCH SỬ
+        // ==========================================
+        let currentViewingDebtId = null;
+
+        // Mở Modal Thanh Toán
+        function openPayDebtModal(debtId) {
+            const debt = debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            document.getElementById('pay_debt_id').value = debtId;
+            document.getElementById('pay-debt-title').innerText = debt.type === 'owe_to' ? 'Trả nợ' : 'Nhận tiền trả';
+            document.getElementById('pay-debt-subtitle').innerText = `Khoản: ${debt.debt_name} - Còn nợ: ${Number(debt.remaining_amount).toLocaleString('vi-VN')} đ`;
+            
+            document.getElementById('pay_principal').value = '';
+            document.getElementById('pay_interest').value = '';
+            document.getElementById('pay_note').value = '';
+            document.getElementById('pay_date').value = new Date().toISOString().split('T')[0];
+            
+            toggleModal('payDebtModal');
+        }
+
+        // Format tự động cho input trả nợ (giống hàm setupAmountFormatter của bạn)
+        ['pay_principal', 'pay_interest'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.addEventListener('focus', function () { this.value = this.value.replace(/\./g, ''); });
+                el.addEventListener('blur', function () {
+                    let val = this.value.replace(/\D/g, '');
+                    if (val) this.value = parseInt(val, 10).toLocaleString('vi-VN');
+                });
+            }
+        });
+
+        // Submit Gọi API Thanh Toán
+        async function submitDebtPayment() {
+            const debtId = document.getElementById('pay_debt_id').value;
+            const principal = parseInt(document.getElementById('pay_principal').value.replace(/\D/g, '')) || 0;
+            const interest = parseInt(document.getElementById('pay_interest').value.replace(/\D/g, '')) || 0;
+
+            if (principal === 0 && interest === 0) {
+                alert("Vui lòng nhập số tiền gốc hoặc lãi muốn thanh toán!");
+                return;
+            }
+
+            const payload = {
+                debt_id: debtId,
+                principal_paid: principal,
+                interest_paid: interest,
+                payment_date: document.getElementById('pay_date').value,
+                note: document.getElementById('pay_note').value
+            };
+
+            try {
+                const res = await fetch('/api/debts/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                
+                if (result.success) {
+                    toggleModal('payDebtModal');
+                    await fetchDebts(); // Load lại bảng nợ
+                    
+                    // Nếu đang mở bảng lịch sử của chính khoản nợ này thì update luôn
+                    if(currentViewingDebtId === debtId) {
+                        fetchDebtLogs(debtId);
+                    }
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error("Lỗi khi thanh toán:", error);
+            }
+        }
+
+        // Lấy lịch sử trả nợ
+        async function fetchDebtLogs(debtId) {
+            currentViewingDebtId = debtId;
+            const debt = debts.find(d => d.id === debtId);
+            
+            try {
+                const res = await fetch(`/api/debts/${debtId}/logs`);
+                const result = await res.json();
+                
+                if (result.success) {
+                    const section = document.getElementById('debt-history-section');
+                    const tbody = document.getElementById('debt-logs-list');
+                    
+                    document.getElementById('history-debt-name').innerText = `Lịch sử: ${debt.debt_name}`;
+                    document.getElementById('history-debt-info').innerText = `${debt.creditor_debtor} - Trạng thái: ${debt.status}`;
+                    
+                    section.classList.remove('hidden'); // Hiển thị bảng
+                    
+                    if (result.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Chưa có lịch sử thanh toán nào.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = result.data.map(log => `
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                <td class="px-6 py-4 text-sm font-medium">${log.payment_date}</td>
+                                <td class="px-6 py-4 text-sm font-bold text-success">+${Number(log.principal_paid).toLocaleString('vi-VN')} đ</td>
+                                <td class="px-6 py-4 text-sm font-bold text-orange-500">+${Number(log.interest_paid).toLocaleString('vi-VN')} đ</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">${log.note || '-'}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button onclick="deleteDebtLog('${log.id}', '${debtId}')" class="p-2 text-gray-400 hover:text-danger rounded-lg transition-colors" title="Hoàn tác">
+                                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                    lucide.createIcons();
+                }
+            } catch (error) {
+                console.error("Lỗi tải lịch sử:", error);
+            }
+        }
+
+        // Đóng bảng lịch sử
+        function closeDebtHistory() {
+            document.getElementById('debt-history-section').classList.add('hidden');
+            currentViewingDebtId = null;
+        }
+
+        // Xóa (Hoàn tác) 1 dòng thanh toán
+        async function deleteDebtLog(logId, debtId) {
+            if(confirm("Bạn có chắc muốn hoàn tác khoản thanh toán này? Tiền nợ sẽ được cộng lại như cũ.")) {
+                try {
+                    const res = await fetch(`/api/debt-logs/${logId}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    if(result.success) {
+                        await fetchDebts(); // Update lại gốc
+                        await fetchDebtLogs(debtId); // Update lại list
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi hoàn tác:", error);
+                }
+            }
         }
 
         window.onload = async () => {
