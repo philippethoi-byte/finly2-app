@@ -201,7 +201,7 @@
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Tổng chi tiêu (năm)</p>
-                    <h3 id="kpi-expense" class="text-2xl font-bold text-danger">0 ₫</h3>
+                    <h3 id="kpi-expense-saving" class="text-2xl font-bold text-danger">0 ₫</h3>
                 </div>
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Số dư hiện tại (năm)</p>
@@ -209,7 +209,7 @@
                 </div>
 				<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
                     <p class="text-gray-500 text-sm font-medium mb-1">Tổng tiết kiệm</p>
-                    <h3 id="kpi-expense-saving" class="text-2xl font-bold text-danger">0 ₫</h3>
+                    <h3 id="kpi-expense-saving" class="text-2xl font-bold text-success">0 ₫</h3>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="savings-list"></div>
@@ -611,6 +611,9 @@
 			if (document.getElementById('kpi-expense')) 
 				document.getElementById('kpi-expense').innerText = formatMoney(yearExpense);
 			
+			if (document.getElementById('kpi-expense-saving')) 
+				document.getElementById('kpi-expense-saving').innerText = formatMoney(yearExpense);
+				
 			if (document.getElementById('kpi-balance')) 
 				document.getElementById('kpi-balance').innerText = formatMoney(yearIncome - yearExpense);
 
