@@ -168,6 +168,22 @@
                         id="filter-month" 
                         onchange="filterTransactions()"
                         class="bg-transparent border-none focus:ring-0 text-sm font-bold text-brand-600 cursor-pointer outline-none">
+                    <div class="h-4 w-[1px] bg-gray-200 dark:bg-dark-border hidden md:block"></div>
+                    <select 
+                        id="filter-category" 
+                        onchange="filterTransactions()"
+                        class="bg-transparent border-none focus:ring-0 text-sm font-bold text-gray-600 dark:text-gray-300 cursor-pointer outline-none">
+                        <option value="">Tất cả danh mục</option>
+                        <option value="Ăn uống">Ăn uống</option>
+                        <option value="Di chuyển">Di chuyển</option>
+                        <option value="Y tế">Y tế</option>
+                        <option value="Mua sắm">Mua sắm</option>
+                        <option value="Giải trí">Giải trí</option>
+                        <option value="Gia đình">Gia đình</option>
+                        <option value="Giáo dục">Giáo dục</option>
+                        <option value="Giáo dục">Du lịch</option>
+                        <option value="Khác">Khác</option>
+                    </select>
                 </div>
             </div>
             <div id="chart-section" class="bg-white dark:bg-dark-card p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm mb-6">
@@ -1574,17 +1590,26 @@
         function openBudgetModal() { toggleModal('budgetModal'); }
         // Thêm hàm này vào cuối phần script của bạn
         function filterTransactions() {
-            const filterValue = document.getElementById('filter-month').value;
+            // 1. Lấy giá trị từ cả 2 bộ lọc
+            const monthValue = document.getElementById('filter-month').value;
+            const categoryValue = document.getElementById('filter-category').value;
             
-            let filtered = transactions;
-            if (filterValue) {
-                filtered = transactions.filter(t => t.date.startsWith(filterValue));
-            }
+            // 2. Thực hiện lọc kết hợp
+            const filtered = transactions.filter(t => {
+                // Kiểm tra điều kiện Tháng (Nếu không chọn tháng thì mặc định đúng)
+                const matchMonth = monthValue ? t.date.startsWith(monthValue) : true;
+                
+                // Kiểm tra điều kiện Danh mục (Nếu chọn "Tất cả" thì mặc định đúng)
+                const matchCategory = categoryValue ? (t.category === categoryValue) : true;
+                
+                // Chỉ giữ lại giao dịch thỏa mãn CẢ HAI
+                return matchMonth && matchCategory;
+            });
 
-            // Cập nhật bảng như cũ
+            // 3. Cập nhật giao dịch ra bảng
             renderTransactionTable(filtered);
             
-            // Cập nhật thêm biểu đồ
+            // 4. Cập nhật biểu đồ (Biểu đồ sẽ tự động thay đổi theo danh sách đã lọc)
             updateHistoryChart(filtered);
         }
 
