@@ -38,7 +38,7 @@
             <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
                 <i data-lucide="wallet" class="w-6 h-6"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">Finly V3</h1>
+            <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">Finly</h1>
         </div>
         <nav class="space-y-2 flex-1">
             <button onclick="switchView('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all active bg-brand-50 dark:bg-brand-900/20 text-brand-600">
@@ -50,9 +50,8 @@
             <button onclick="switchView('savings', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
                 <i data-lucide="piggy-bank" class="w-5 h-5"></i> <span class="font-medium">Tiết kiệm</span>
             </button>
-            <button onclick="switchView('debts', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
-                <i data-lucide="hand-coins" class="w-5 h-5"></i>
-                <span class="font-medium">Quản lý Nợ</span>
+            <button onclick="switchView('debts', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                <i data-lucide="hand-coins" class="w-5 h-5"></i> <span class="font-medium">Quản lý Nợ</span>
             </button>
         </nav>
     </aside>
@@ -75,8 +74,7 @@
             <i data-lucide="piggy-bank" class="w-5 h-5 mb-1"></i><span class="font-medium">Tiết kiệm</span>
         </button>
         <button onclick="switchView('debts', this)" class="nav-item flex flex-col items-center p-2 text-gray-400 hover:text-brand-600 transition-colors">
-            <i data-lucide="hand-coins" class="w-5 h-5 mb-1></i>
-            <span class="font-medium"">Nợ</span>
+            <i data-lucide="hand-coins" class="w-5 h-5 mb-1"></i> <span class="font-medium">Nợ</span>
         </button>
     </nav>
 
