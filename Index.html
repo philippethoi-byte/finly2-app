@@ -47,9 +47,6 @@
             <button onclick="switchView('transactions', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
                 <i data-lucide="arrow-left-right" class="w-5 h-5"></i> <span class="font-medium">Giao dịch</span>
             </button>
-            <button onclick="switchView('budgets', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
-                <i data-lucide="pie-chart" class="w-5 h-5"></i> <span class="font-medium">Ngân sách</span>
-            </button>
             <button onclick="switchView('savings', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800">
                 <i data-lucide="piggy-bank" class="w-5 h-5"></i> <span class="font-medium">Tiết kiệm</span>
             </button>
@@ -74,9 +71,6 @@
             </button>
         </div>
 
-        <button onclick="switchView('budgets', this)" class="nav-item flex flex-col items-center p-2 text-gray-400 hover:text-brand-600 transition-colors">
-            <i data-lucide="pie-chart" class="w-5 h-5 mb-1"></i><span class="font-medium">Ngân sách</span>
-        </button>
         <button onclick="switchView('savings', this)" class="nav-item flex flex-col items-center p-2 text-gray-400 hover:text-brand-600 transition-colors">
             <i data-lucide="piggy-bank" class="w-5 h-5 mb-1"></i><span class="font-medium">Tiết kiệm</span>
         </button>
@@ -125,33 +119,40 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
                 <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm w-full overflow-hidden">
-                    <h4 class="font-bold mb-6">Phân bổ chi tiêu</h4>
-                    <div class="h-64 w-full relative"><canvas id="expensePieChart"></canvas></div>
+                    <h4 class="font-bold mb-6">Phân bổ chi tiêu tháng này</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="relative h-[250px] w-full">
+                            <canvas id="expensePieChart"></canvas>
+                        </div>
+                
+                        <div id="pie-chart-legend" class="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                        </div>
+                    </div>
                 </div>
-				                
-					<div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
-						<div class="flex items-center justify-between mb-6">
-							<h4 class="font-bold text-lg">Tình hình ngân sách</h4>
-							
-							<button type="button" onclick="openBudgetModal()" title="Thêm ngân sách" aria-label="Thêm ngân sách" class="flex bg-brand-600 hover:bg-brand-700 text-white p-3.5 rounded-xl items-center justify-center shadow-lg shadow-brand-500/20 transition-all active:scale-95">
-								<i data-lucide="circle-plus" class="w-6 h-6"></i>
-							</button>
-						</div>
-						<div id="budget-summary-list" class="space-y-6"></div>
-					</div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
+                    <div class="bg-white dark:bg-dark-card p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm">
+                            <div class="flex items-center justify-between mb-6">
+                                <h4 class="font-bold text-lg">Tình hình ngân sách</h4>
+                                
+                                <button type="button" onclick="openBudgetModal()" title="Thêm ngân sách" aria-label="Thêm ngân sách" class="flex bg-brand-600 hover:bg-brand-700 text-white p-3.5 rounded-xl items-center justify-center shadow-lg shadow-brand-500/20 transition-all active:scale-95">
+                                    <i data-lucide="circle-plus" class="w-6 h-6"></i>
+                                </button>
+                            </div>
+                            <div id="budget-summary-list" class="space-y-6"></div>
+                    </div>
             </div>
 			
-            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8 hidden">
                 <div class="bg-white dark:bg-dark-card rounded-2xl border border-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
                     <div class="p-5 border-b dark:border-dark-border flex justify-between items-center">
-                        <h4 class="font-bold">Giao dịch gần đây</h4>
-                        <button onclick="switchView('transactions', document.querySelector('[onclick*=\'transactions\']'))" class="text-brand-600 text-sm font-medium">Xem tất cả</button>
+                            <h4 class="font-bold">Giao dịch gần đây</h4>
+                            <button onclick="switchView('transactions', document.querySelector('[onclick*=\'transactions\']'))" class="text-brand-600 text-sm font-medium">Xem tất cả</button>
                     </div>
                     <div id="recent-transactions-list" class="divide-y dark:divide-dark-border"></div>
                 </div>
-
             </div>
         </div>
 
@@ -173,8 +174,12 @@
             </div>
             <div id="chart-section" class="bg-white dark:bg-dark-card p-6 rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm mb-6">
                 <h3 class="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Phân bổ chi tiêu theo tháng</h3>
-                <div class="relative h-[300px] w-full flex justify-center">
-                    <canvas id="historyExpenseChart"></canvas>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="relative h-[300px] w-full flex justify-center">
+                        <canvas id="historyExpenseChart"></canvas>
+                    </div>
+                    <div id="chart-data-legend" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                    </div>
                 </div>
             </div>
             <div class="bg-white dark:bg-dark-card rounded-2xl border border-dark-border overflow-x-auto shadow-sm">
@@ -362,10 +367,9 @@
                     <select 
                         id="source" 
                         class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
-                        <option value="Tiền mặt">💵 Tiền mặt</option>
-                        <option value="Tiền mặt">💵 Tiền mặt</option>
-                        <option value="Ví">📱 Ví</option>
-                        <option value="Ngân hàng">🏦 Ngân hàng</option>
+                        <option value="Tiền mặt">Tiền mặt</option>
+                        <option value="Ví">Ví</option>
+                        <option value="Ngân hàng">Ngân hàng</option>
                     </select>
 
                     <!-- Ghi chú -->
@@ -400,6 +404,51 @@
 		</div>
 	</div>
 
+    <div id="editTransactionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-dark-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl scale-in">
+            <h3 class="text-xl font-bold mb-6 text-brand-600">Cập nhật giao dịch</h3>
+            
+            <input type="hidden" id="edit_id"> 
+    
+            <div class="space-y-4">
+                <div class="flex gap-4 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                    <label class="flex-1 text-center py-2 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-red-600 has-[:checked]:shadow-sm dark:has-[:checked]:bg-gray-700">
+                        <input type="radio" name="edit_type" value="expense" class="hidden" onchange="renderEditCategories()"> 
+                        <span class="text-sm font-bold">Chi tiêu</span>
+                    </label>
+                    <label class="flex-1 text-center py-2 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-emerald-600 has-[:checked]:shadow-sm dark:has-[:checked]:bg-gray-700">
+                        <input type="radio" name="edit_type" value="income" class="hidden" onchange="renderEditCategories()"> 
+                        <span class="text-sm font-bold">Thu nhập</span>
+                    </label>
+                </div>
+    
+                <div class="relative">
+                    <input type="text" id="edit_amount" placeholder="Số tiền (₫)" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-brand-500 font-bold text-lg">
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-lg font-medium">₫</div>
+                </div>
+    
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="date" id="edit_date" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
+                    
+                    <select id="edit_category" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm"></select>
+                </div>
+    
+                <select id="edit_source" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none text-sm">
+                    <option value="Tiền mặt">Tiền mặt</option>
+                    <option value="Ví">Ví</option>
+                    <option value="Ngân hàng">Ngân hàng</option>
+                </select>
+    
+                <textarea id="edit_note" placeholder="Ghi chú..." class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none h-24 resize-none"></textarea>
+    
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="toggleModal('editTransactionModal')" class="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">Hủy</button>
+                    <button type="button" onclick="submitUpdateTransaction()" class="flex-1 py-4 bg-brand-600 text-white rounded-2xl font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-700 transition-colors">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="budgetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl">
             <h3 class="text-xl font-bold mb-6">Thiết lập ngân sách</h3>
@@ -407,15 +456,13 @@
                 <select id="budget-cat" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
                     <option value="Ăn uống">Ăn uống</option>
                     <option value="Di chuyển">Di chuyển</option>
-					<option value="Y tế & Sức khỏe">Y tế & Sức khỏe</option>
+					<option value="Y tế">Y tế</option>
                     <option value="Mua sắm">Mua sắm</option>
                     <option value="Giải trí">Giải trí</option>
-					<option value="Gia đình & Con cái">Gia đình & Con cái</option>
-					<option value="Tiết kiệm & Đầu tư">Tiết kiệm & Đầu tư</option>
-                    <option value="Tiền nhà">Tiền nhà</option>
-					<option value="Bảo hiểm">Bảo hiểm</option>
-					<option value="Trả nợ">Trả nợ</option>
-					<option value="Học phí / chi phí giáo dục cố định">Học phí / chi phí giáo dục cố định</option>
+					<option value="Gia đình">Gia đình</option>
+					<option value="Giáo dục">Giáo dục</option>
+                    <option value="Giáo dục">Du lịch</option>
+                    <option value="Khác">Khác</option>
                 </select>
                 <input type="number" id="budget-limit" placeholder="Hạn mức tối đa (₫)" class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border-none font-bold">
                 <div class="flex gap-3 pt-4">
@@ -540,24 +587,16 @@
             expense: {
                 "Ăn uống": ["cafe", "ăn", "uống", "phở", "bún", "nhậu", "mì", "cơm", "trà sữa", "thịt", "cá", "siêu thị"],
                 "Di chuyển": ["xăng", "xe", "grab", "taxi", "bus", "xe ôm", "phà", "vé xe"],
-                "Y tế & Sức khỏe": ["thuốc", "bệnh viện", "khám", "vitamin", "gym", "yoga", "nha khoa"],
+                "Y tế": ["thuốc", "bệnh viện", "khám", "vitamin", "gym", "yoga", "nha khoa"],
                 "Mua sắm": ["quần áo", "giày", "shopee", "tiki", "lazada", "mỹ phẩm", "đồ gia dụng"],
                 "Giải trí": ["phim", "netflix", "du lịch", "karaoke", "game", "sách", "vé xem"],
-                "Gia đình & Con cái": ["tả", "sữa", "học phí con", "đồ chơi", "biếu", "quà lễ"],
-                "Tiền nhà": ["tiền điện", "điện thoại", "tiền nước", "internet", "wifi", "thuê nhà", "chung cư", "quản lý"],
-                "Bảo hiểm": ["manulife", "daichi", "bảo hiểm", "bhyt"],
-                "Trả nợ": ["trả nợ", "trả góp", "lãi vay", "tín dụng"],
-                "Học phí / chi phí giáo dục cố định": ["khóa học", "học phí", "anh văn", "kỹ năng", "giáo dục"],
-                "Tiết kiệm & Đầu tư": ["vàng", "chứng khoán", "coin", "tiết kiệm"]
+                "Gia đình": ["tả", "sữa", "học phí con", "đồ chơi", "biếu", "quà lễ"],
+                "Giáo dục": ["học phí", "nhà sách", "fahasa", "biếu cô", "biếu thầy"],
+                "Du lịch": ["dl", "du lich", "du lịch", "đi chơi", "tham quan"],
             },
             income: {
-                "Lương": ["lương", "salary", "thu nhập"],
-                "Thưởng": ["thưởng", "bonus"],
-                "Phụ cấp": ["phụ cấp", "allowance", "ăn trưa", "xăng xe"],
-                "Kinh doanh nhỏ": ["bán hàng", "lợi nhuận", "tiền hàng"],
-                "Lãi tiết kiệm ngân hàng": ["lãi ngân hàng", "tiền lãi"],
-                "Cho thuê": ["cho thuê", "tiền nhà"],
-                "Tiền trợ cấp": ["lì xì", "trợ cấp", "từ thiện"]
+                "Lương": ["lương", "salary", "thu nhập","thưởng", "bonus", "phụ cấpcấp"],
+                "Đầu tư": ["lãi ngân hàng", "tiền lãi", "chứng khoán", "cho thuêthuê", "lãi", "lãi ckck"],
             }
         };
 
@@ -838,23 +877,60 @@
             if (!ctx) return;
             if (charts.pie) charts.pie.destroy();
             
-            if (!data || Object.keys(data).length === 0) return;
+            if (!data || Object.keys(data).length === 0) {
+                document.getElementById('pie-chart-legend').innerHTML = '<p class="text-gray-400 text-sm italic">Chưa có dữ liệu</p>';
+                return;
+            }
 
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            const total = values.reduce((a, b) => a + b, 0);
+            const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+
+            // 1. Khởi tạo Biểu đồ
             charts.pie = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(data),
+                    labels: labels,
                     datasets: [{
-                        data: Object.values(data),
-                        backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899']
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 15
                     }]
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } 
+                    cutout: '75%', // Làm vòng tròn mỏng hơn cho hiện đại
+                    plugins: { 
+                        legend: { display: false } // Ẩn legend mặc định
+                    } 
                 }
             });
+
+            // 2. Render Bảng số liệu (Legend) bên cạnh
+            const legendContainer = document.getElementById('pie-chart-legend');
+            if (legendContainer) {
+                legendContainer.innerHTML = labels.map((label, index) => {
+                    const val = values[index];
+                    const percent = ((val / total) * 100).toFixed(1);
+                    const color = colors[index % colors.length];
+
+                    return `
+                        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></div>
+                                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">${label}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-bold text-gray-900 dark:text-white">${val.toLocaleString('vi-VN')} ₫</div>
+                                <div class="text-[10px] font-medium text-gray-400">${percent}%</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         function renderCompareChart(cfData, month, year) {
@@ -1151,46 +1227,101 @@
             }
         }
 
-        // Hàm mở Modal và đổ dữ liệu cũ vào để sửa
+        // 1. HÀM TẠO OPTIONS CHO DANH MỤC EDIT (Sử dụng categoryData, không icon, hỗ trợ auto-select)
+        function renderEditCategories(selectedCategory = null) {
+            const typeRadio = document.querySelector('input[name="edit_type"]:checked');
+            if (!typeRadio) return;
+            const type = typeRadio.value;
+            
+            const select = document.getElementById('edit_category');
+            const categories = categoryData[type] || [];
+            
+            select.innerHTML = categories.map(item => {
+                // So sánh trực tiếp để set thuộc tính selected
+                const isSelected = (item.value === selectedCategory) ? 'selected' : '';
+                return `<option value="${item.value}" ${isSelected}>${item.value}</option>`;
+            }).join('');
+        }
+
+        // 2. HÀM MỞ FORM CẬP NHẬT (Được gọi khi bấm nút Sửa trên bảng)
         function editTransaction(id) {
+            // Lấy thông tin giao dịch
             const t = transactions.find(item => item.id === id);
             if (!t) return;
 
-            editingTransactionId = id;
+            // A. Gán ID vào trường ẩn để lát nữa update
+            document.getElementById('edit_id').value = id;
 
-            // 1. Đổi tiêu đề Modal
-            const modalTitle = document.getElementById('modal-title');
-            if (modalTitle) modalTitle.innerText = 'Cập nhật giao dịch';
-
-            // 2. Gán loại giao dịch (Thu/Chi)
-            const typeRadios = document.querySelectorAll('input[name="type"]');
+            // B. Gán Loại giao dịch (radio button)
+            const typeRadios = document.querySelectorAll('input[name="edit_type"]');
             typeRadios.forEach(r => {
-                if (r.value === t.type) r.checked = true;
+                r.checked = (r.value === t.type);
             });
-            
-            // 3. QUAN TRỌNG: Cập nhật danh sách Category của Type đó ngay lập tức
-            updateCategories();
 
-            // 4. Bây giờ mới gán giá trị cho các input
-            document.getElementById('amount').value = Number(t.amount).toLocaleString('vi-VN');
-            document.getElementById('date').value = t.date;
-            document.getElementById('source').value = t.source || '';
-            document.getElementById('note').value = t.note || '';
-            
-            // Gán Category (Lúc này danh sách option đã được nạp xong ở bước 3)
-            document.getElementById('category').value = t.category;
+            // C. Gọi hàm tạo danh mục và truyền giá trị category vào để nó auto-select
+            renderEditCategories(t.category);
 
-            toggleModal('transactionModal');
+            // D. Gán các trường còn lại
+            document.getElementById('edit_amount').value = Number(t.amount).toLocaleString('vi-VN');
+            document.getElementById('edit_date').value = t.date;
+            document.getElementById('edit_note').value = t.note || '';
+            
+            // Gán Source (Nếu data cũ trống thì mặc định là Tiền mặt)
+            document.getElementById('edit_source').value = t.source || 'Tiền mặt'; 
+
+            // E. Hiển thị modal
+            toggleModal('editTransactionModal');
+        }
+
+        // 3. HÀM LƯU DỮ LIỆU CẬP NHẬT LÊN SERVER
+        async function submitUpdateTransaction() {
+            const id = document.getElementById('edit_id').value;
+            const amountStr = document.getElementById('edit_amount').value;
+            const amount = parseInt(String(amountStr).replace(/\D/g, ''), 10) || 0;
+            
+            const payload = {
+                amount: amount,
+                date: document.getElementById('edit_date').value,
+                category: document.getElementById('edit_category').value,
+                source: document.getElementById('edit_source').value,
+                note: document.getElementById('edit_note').value,
+                type: document.querySelector('input[name="edit_type"]:checked').value
+            };
+
+            try {
+                const response = await fetch(`/api/transactions/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Đóng modal và reset data
+                    toggleModal('editTransactionModal');
+                    
+                    // Reload giao diện
+                    await fetchTransactions();
+                    await updateAllCharts();
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                console.error("Lỗi khi cập nhật:", error);
+            }
         }
 
         // Hàm dùng cho nút "Thêm giao dịch mới" (Để đảm bảo form trống)
         function openAddTransactionModal() {
-            editingTransactionId = null; // Reset về trạng thái thêm mới
-            
+            // Reset về trạng thái nhập tay (Chi tiêu)
+            document.querySelector('input[name="type"][value="expense"]').checked = true;
+            toggleTransactionMode(); // Hiển thị lại form nhập tay, ẩn form import
+
             // Reset Form và tiêu đề
             document.getElementById('amount').value = '';
             document.getElementById('note').value = '';
-            document.getElementById('source').value = '';
+            document.getElementById('source').value = 'Tiền mặt';
             document.getElementById('modal-title').innerText = 'Thêm giao dịch mới';
             
             // Mặc định ngày hôm nay
@@ -1343,30 +1474,20 @@
 		// 🔥 Danh mục với icon (emoji) – đẹp, dễ nhận diện trên mobile
 		const categoryData = {
 			expense: [
-				{ value: "Ăn uống", icon: "🍜" },
-				{ value: "Di chuyển", icon: "🛵" },
-				{ value: "Y tế & Sức khỏe", icon: "🩺" },
-				{ value: "Mua sắm", icon: "🛍️" },
-				{ value: "Giải trí", icon: "🎥" },
-				{ value: "Gia đình & Con cái", icon: "👨‍👧‍👦" },
-				{ value: "Tiết kiệm & Đầu tư", icon: "📈" },
-				{ value: "Tiền nhà", icon: "🏠" },
-				{ value: "Bảo hiểm", icon: "🛡️" },
-				{ value: "Trả nợ", icon: "💳" },
-				{ value: "Học phí / chi phí giáo dục cố định", icon: "🎓" },
-				{ value: "Khác", icon: "❔" }
+				{ value: "Ăn uống"},
+				{ value: "Di chuyển"},
+				{ value: "Y tế"},
+				{ value: "Mua sắm"},
+				{ value: "Giải trí"},
+				{ value: "Gia đình"},
+				{ value: "Giáo dục"},
+                { value: "Du lịch"},
+				{ value: "Khác"}
 			],
 			income: [
-				{ value: "Lương", icon: "💼" },
-				{ value: "Thưởng", icon: "🎁" },
-				{ value: "Phụ cấp", icon: "💵" },
-				{ value: "Kinh doanh nhỏ", icon: "🛒" },
-				{ value: "Lãi tiết kiệm ngân hàng", icon: "🏦" },
-				{ value: "Lợi nhuận từ đầu tư", icon: "📊" },
-				{ value: "Cho thuê", icon: "🏘️" },
-				{ value: "Hoàn thuế", icon: "🧾" },
-				{ value: "Tiền trợ cấp", icon: "🧧" },
-				{ value: "Khác", icon: "❔" }
+				{ value: "Lương"},
+				{ value: "Đầu tư"},
+				{ value: "Khác"}
 			]
 		};
 
@@ -1376,49 +1497,60 @@
             const typeElement = document.querySelector('input[name="type"]:checked');
             if (!typeElement) return;
             const type = typeElement.value;
-            
+           
+            // 🔥 THÊM DÒNG NÀY: Nếu đang ở màn hình Import thì thoát luôn, không render category
+            if (type === 'import') return;
+
             const categorySelect = document.getElementById('category');
             if (!categorySelect) return;
 
             // Xóa danh sách cũ
-            categorySelect.innerHTML = '<option value="">-- Chọn danh mục --</option>';
+            categorySelect.innerHTML = '';
             
             // Sử dụng đúng biến categoryData của bạn
-            const categories = categoryData[type] || [];
+            const categories = categoryData[type];
             
             categories.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.value;
                 // Hiển thị cả Icon và Tên cho đẹp
-                option.textContent = `${item.icon} ${item.value}`;
+                option.textContent = `${item.value}`;
                 categorySelect.appendChild(option);
             });
         }
 
 		// Format số tiền kiểu Việt Nam (10.000, 100.000...)
-		function setupAmountFormatter() {
-			const amountInput = document.getElementById('amount');
-			
-			amountInput.addEventListener('focus', function () {
-				this.value = this.value.replace(/\./g, '');
-			});
-			
-			amountInput.addEventListener('blur', function () {
-				let value = this.value.trim();
-				if (!value) return;
-				value = value.replace(/\D/g, '');
-				if (value) {
-					this.value = parseInt(value, 10).toLocaleString('vi-VN');
-				}
-			});
-			
-			amountInput.addEventListener('paste', function () {
-				setTimeout(() => {
-					this.blur();
-					this.focus();
-				}, 10);
-			});
-		}
+        function setupAmountFormatter() {
+            // Lấy cả 2 input amount của Form Add và Form Edit
+            const amountInputs = [
+                document.getElementById('amount'),
+                document.getElementById('edit_amount')
+            ];
+            
+            amountInputs.forEach(input => {
+                if (!input) return; // Tránh lỗi nếu không tìm thấy DOM
+                
+                input.addEventListener('focus', function () {
+                    this.value = this.value.replace(/\./g, '');
+                });
+                
+                input.addEventListener('blur', function () {
+                    let value = this.value.trim();
+                    if (!value) return;
+                    value = value.replace(/\D/g, '');
+                    if (value) {
+                        this.value = parseInt(value, 10).toLocaleString('vi-VN');
+                    }
+                });
+                
+                input.addEventListener('paste', function () {
+                    setTimeout(() => {
+                        this.blur();
+                        this.focus();
+                    }, 10);
+                });
+            });
+        }
 
 		// Khởi tạo form
 		function initTransactionForm() {
@@ -1473,6 +1605,7 @@
 
             const labels = Object.keys(totalsByCategory);
             const dataValues = Object.values(totalsByCategory);
+            const totalAmount = dataValues.reduce((sum, val) => sum + val, 0); // Tính tổng tất cả
 
             // 3. Nếu biểu đồ đã tồn tại thì hủy để vẽ mới (tránh lỗi đè chart)
             if (expenseChart) {
@@ -1521,6 +1654,28 @@
                     cutout: '70%' // Tạo lỗ hổng ở giữa cho đẹp
                 }
             });
+            // --- PHẦN MỚI: RENDER BẢNG DỮ LIỆU TỔNG HỢP ---
+            const legendContainer = document.getElementById('chart-data-legend');
+            if (legendContainer) {
+                legendContainer.innerHTML = labels.map((label, index) => {
+                    const val = dataValues[index];
+                    const pct = totalAmount > 0 ? ((val / totalAmount) * 100).toFixed(1) : 0;
+                    const color = colors[index % colors.length];
+
+                    return `
+                        <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 rounded-full" style="background-color: ${color}"></div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${label}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-bold text-gray-900 dark:text-white">${val.toLocaleString('vi-VN')} ₫</div>
+                                <div class="text-[10px] text-gray-500">${pct}%</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         let debts = [];
